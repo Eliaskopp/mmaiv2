@@ -95,6 +95,17 @@ The user has ADHD. Do not rely on them to manually document their progress. Afte
 
 Stop your execution and explicitly tell the user: "Please copy this summary into your Obsidian MMAi-State note. Reply 'Done' when you have saved it, and we will move to the next step."
 
+## Frontend Commands
+
+```bash
+cd frontend
+npm install          # Install dependencies
+npm run dev          # Start dev server on :5173
+npm run build        # Production build to frontend/dist/
+npm run preview      # Preview production build
+npm run lint         # ESLint check
+```
+
 ## Key Directories (planned)
 
 ```
