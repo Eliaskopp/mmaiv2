@@ -1,15 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, get_db
+from app.core.limiter import limiter
 from app.models.user import User
 from app.schemas.auth import (
     AuthResponse,
+    ForgotPasswordRequest,
     LoginRequest,
     MessageResponse,
     RefreshRequest,
     RefreshResponse,
     RegisterRequest,
+    ResetPasswordRequest,
     UserResponse,
     VerifyEmailRequest,
 )
@@ -18,8 +21,9 @@ from app.services import auth as auth_service
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@router.post("/register", response_model=AuthResponse, status_code=201)
+@limiter.limit("5/minute")
+async def register(request: Request, body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     user, access, refresh = await auth_service.register_user(
         db, body.email, body.password, body.display_name
     )
@@ -31,7 +35,8 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=AuthResponse)
-async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends(get_db)):
     user, access, refresh = await auth_service.login_user(db, body.email, body.password)
     return AuthResponse(
         user=UserResponse.model_validate(user),
@@ -63,17 +68,14 @@ async def logout():
     return MessageResponse(message="Logged out successfully")
 
 
-@router.post("/forgot-password", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def forgot_password():
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Password reset not yet implemented",
-    )
+@router.post("/forgot-password", response_model=MessageResponse)
+@limiter.limit("3/minute")
+async def forgot_password(request: Request, body: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    await auth_service.request_password_reset(db, body.email)
+    return MessageResponse(message="If that email exists, a reset link has been sent")
 
 
-@router.post("/reset-password", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def reset_password():
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Password reset not yet implemented",
-    )
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    await auth_service.reset_password(db, body.token, body.password)
+    return MessageResponse(message="Password reset successfully")

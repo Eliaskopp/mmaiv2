@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # CORS
     allowed_origins: list[str] = ["http://localhost:5173"]
 
+    # Email (Resend)
+    resend_api_key: str = ""
+    email_from: str = "MMAi Coach <noreply@mmai.coach>"
+    app_url: str = "http://localhost:5173"
+
     # AI
     grok_api_key: str = ""
     grok_base_url: str = "https://api.x.ai/v1"
