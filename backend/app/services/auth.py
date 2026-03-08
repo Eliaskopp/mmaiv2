@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from jose import JWTError
@@ -15,6 +15,8 @@ from app.core.security import (
     verify_password,
 )
 from app.models.user import User
+
+VERIFICATION_TOKEN_EXPIRY_HOURS = 48
 
 
 async def register_user(
@@ -137,6 +139,14 @@ async def verify_email(db: AsyncSession, token: str) -> User:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid verification token",
+        )
+
+    if user.verification_sent_at is None or datetime.now(timezone.utc) - user.verification_sent_at > timedelta(
+        hours=VERIFICATION_TOKEN_EXPIRY_HOURS
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification token has expired",
         )
 
     user.is_verified = True

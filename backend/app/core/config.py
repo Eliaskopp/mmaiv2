@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 10080  # 7 days
 
+    # CORS
+    allowed_origins: list[str] = ["http://localhost:5173"]
+
     # AI
     grok_api_key: str = ""
     grok_base_url: str = "https://api.x.ai/v1"
