@@ -57,6 +57,12 @@ async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_
     return MessageResponse(message="Email verified successfully")
 
 
+@router.post("/logout", response_model=MessageResponse)
+async def logout():
+    """Logout endpoint. Client is responsible for clearing stored tokens."""
+    return MessageResponse(message="Logged out successfully")
+
+
 @router.post("/forgot-password", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def forgot_password():
     raise HTTPException(
