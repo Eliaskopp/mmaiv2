@@ -85,6 +85,16 @@ V2 is fully isolated. If you need to touch shared infrastructure (nginx, Postgre
 - **Do NOT invent methods** that don't exist in the codebase
 - **Do NOT add dependencies** without explicit approval
 
+## ADHD Documentation Interlock
+
+The user has ADHD. Do not rely on them to manually document their progress. After completing any major feature, Git commit, or ADR, you must automatically generate a "Session Summary" in standard Markdown. This summary must include:
+
+- What was built.
+- The terminal commands used.
+- The specific files changed.
+
+Stop your execution and explicitly tell the user: "Please copy this summary into your Obsidian MMAi-State note. Reply 'Done' when you have saved it, and we will move to the next step."
+
 ## Key Directories (planned)
 
 ```

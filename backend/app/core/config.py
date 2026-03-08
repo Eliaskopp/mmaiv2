@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     # Auth
     jwt_secret: str
     jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 1440  # 24 hours
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_minutes: int = 10080  # 7 days
 
     # AI
     grok_api_key: str = ""
