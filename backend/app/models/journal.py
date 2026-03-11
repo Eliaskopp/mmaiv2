@@ -6,6 +6,7 @@ from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
+    Enum as SAEnum,
     Float,
     ForeignKey,
     Index,
@@ -46,7 +47,10 @@ class TrainingSession(UUIDMixin, TimestampMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True,
     )
-    session_type: Mapped[SessionType] = mapped_column(nullable=False)
+    session_type: Mapped[SessionType] = mapped_column(
+        SAEnum(SessionType, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+    )
     title: Mapped[str | None] = mapped_column(String(200))
     notes: Mapped[str | None] = mapped_column(Text)
 
@@ -64,11 +68,15 @@ class TrainingSession(UUIDMixin, TimestampMixin, Base):
     gym_name: Mapped[str | None] = mapped_column(String(100))
 
     source: Mapped[SessionSource] = mapped_column(
+        SAEnum(SessionSource, values_callable=lambda e: [m.value for m in e]),
         nullable=False, server_default=SessionSource.MANUAL.value,
     )
     exertion_load: Mapped[float | None] = mapped_column(Float)
     session_date: Mapped[date] = mapped_column(
         Date, nullable=False, server_default=func.current_date(),
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
     )
 
     __table_args__ = (
