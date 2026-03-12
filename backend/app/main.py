@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import engine
 from app.core.limiter import limiter
-from app.routes import auth, health, journal, profile, recovery
+from app.routes import auth, conversation, health, journal, profile, recovery
 
 
 @asynccontextmanager
@@ -39,3 +39,4 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(journal.router, prefix="/api")
 app.include_router(recovery.router, prefix="/api")
+app.include_router(conversation.router, prefix="/api")

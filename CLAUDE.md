@@ -26,6 +26,7 @@ AI martial arts coaching platform V2 — a "Living Portfolio" app targeting Melb
 - Parameterized queries only — never `f"... {variable} ..."` in SQL
 - All FKs reference UUID columns
 - Use SQLAlchemy models with Alembic migrations
+- **`created_at` is permanently immutable** — never update it during an upsert, PATCH, or any other operation. If a table needs "last modified" tracking, use a separate `updated_at` column via TimestampMixin.
 
 ## Code Style
 
@@ -76,6 +77,11 @@ Do NOT build these — they belong to V1 only:
 
 V2 is fully isolated. If you need to touch shared infrastructure (nginx, PostgreSQL), document what's needed and ask first.
 
+## Strict Override Rules
+
+- **User constraints override plan documents** — if the user gives an explicit architectural constraint (e.g. "use soft deletes", "created_at is immutable"), follow it exactly. Never override it with suggestions from a plan, design doc, or general best practice.
+- **When in doubt, ask** — if a plan contradicts a prior user instruction, stop and ask. Do not silently pick one.
+
 ## Anti-Hallucination Rules
 
 - **Verify packages on PyPI/npmjs.com** before adding
@@ -94,6 +100,13 @@ The user has ADHD. Do not rely on them to manually document their progress. Afte
 - The specific files changed.
 
 Stop your execution and explicitly tell the user: "Please copy this summary into your Obsidian MMAi-State note. Reply 'Done' when you have saved it, and we will move to the next step."
+
+## Obsidian / Sync Block Format
+
+All Sync Blocks and ADRs written to `~/Digital Mind/MMAi-V2/` **MUST** use the plain-text Zettelkasten template. **Never use YAML frontmatter** (`---`). The exact format is:
+
+```
+\n2026-03-11 19:00\n\nStatus: #child\n\nTags: [[tag1]] [[tag2]]\n\n# Title\n\n[Content]\n\n# Reference\n```
 
 ## Frontend Commands
 
