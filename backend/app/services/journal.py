@@ -1,10 +1,10 @@
 import uuid
 from datetime import date
 
-from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import EntityNotFoundError
 from app.models.journal import TrainingSession
 
 
@@ -26,6 +26,11 @@ async def create_session(
     )
     session = TrainingSession(user_id=user_id, exertion_load=exertion_load, **data)
     db.add(session)
+
+    from app.services import profile as profile_service
+    session_date = data.get("session_date") or date.today()
+    await profile_service.update_streak(db, user_id, session_date)
+
     await db.commit()
     await db.refresh(session)
     return session
@@ -73,10 +78,7 @@ async def get_session(
     )
     session = result.scalar_one_or_none()
     if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found",
-        )
+        raise EntityNotFoundError("Training Session")
     return session
 
 

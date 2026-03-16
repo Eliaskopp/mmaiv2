@@ -108,6 +108,21 @@ All Sync Blocks and ADRs written to `~/Digital Mind/MMAi-V2/` **MUST** use the p
 ```
 \n2026-03-11 19:00\n\nStatus: #child\n\nTags: [[tag1]] [[tag2]]\n\n# Title\n\n[Content]\n\n# Reference\n```
 
+## Obsidian Vault Organization
+
+The vault at `~/Digital Mind/` follows strict Zettelkasten separation:
+
+| Folder | Contains | Example |
+|--------|----------|---------|
+| `MMAi-V2/` | Project-specific ADRs, Sync Blocks, session summaries | `2026-03-12-Phase-3A-...md` |
+| `Zettelkasten/` | Atomic knowledge cards with real content/explanations | `FastAPI.md`, `PostgreSQL.md` |
+| `3 - Tags/` | Empty pages that act as backlink anchors (tags) | `mmai-v2.md`, `backend.md` |
+
+**Rules:**
+- **Never** put empty anchor pages in `Zettelkasten/` — they go in `3 - Tags/`
+- **Never** put project logs/ADRs in `Zettelkasten/` — they go in `MMAi-V2/`
+- Reusable coding concepts learned during the project go in `Zettelkasten/` as atomic notes
+
 ## Frontend Commands
 
 ```bash

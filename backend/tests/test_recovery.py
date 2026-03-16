@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 
 async def _register(client: AsyncClient, email: str = "recovery@example.com") -> dict:
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": "securepass123",
         "display_name": "Recovery User",
@@ -24,7 +24,7 @@ async def _create_log(
     client: AsyncClient, headers: dict, **overrides,
 ) -> dict:
     payload = {**overrides}
-    resp = await client.post("/api/recovery/logs", json=payload, headers=headers)
+    resp = await client.post("/api/v1/recovery/logs", json=payload, headers=headers)
     assert resp.status_code == 200
     return resp.json()
 
@@ -105,14 +105,14 @@ async def test_upsert_same_date_updates(client: AsyncClient):
     assert second["notes"] == "Updated after nap"
 
     # Verify only one log exists for today
-    resp = await client.get("/api/recovery/logs", headers=headers)
+    resp = await client.get("/api/v1/recovery/logs", headers=headers)
     assert resp.json()["total"] == 1
 
 
 @pytest.mark.asyncio
 async def test_upsert_invalid_metric(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/recovery/logs", json={
+    resp = await client.post("/api/v1/recovery/logs", json={
         "sleep_quality": 6,
     }, headers=_auth(data))
     assert resp.status_code == 422
@@ -120,7 +120,7 @@ async def test_upsert_invalid_metric(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_upsert_unauthenticated(client: AsyncClient):
-    resp = await client.post("/api/recovery/logs", json={"sleep_quality": 3})
+    resp = await client.post("/api/v1/recovery/logs", json={"sleep_quality": 3})
     assert resp.status_code in (401, 403)
 
 
@@ -130,7 +130,7 @@ async def test_upsert_unauthenticated(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_logs_empty(client: AsyncClient):
     data = await _register(client)
-    resp = await client.get("/api/recovery/logs", headers=_auth(data))
+    resp = await client.get("/api/v1/recovery/logs", headers=_auth(data))
     assert resp.status_code == 200
     body = resp.json()
     assert body["items"] == []
@@ -146,7 +146,7 @@ async def test_list_logs_own_only(client: AsyncClient):
     await _create_log(client, _auth(user1), sleep_quality=4)
     await _create_log(client, _auth(user2), sleep_quality=2)
 
-    resp = await client.get("/api/recovery/logs", headers=_auth(user1))
+    resp = await client.get("/api/v1/recovery/logs", headers=_auth(user1))
     body = resp.json()
     assert body["total"] == 1
     assert body["items"][0]["sleep_quality"] == 4
@@ -161,14 +161,14 @@ async def test_list_logs_pagination(client: AsyncClient):
         d = (today - timedelta(days=i)).isoformat()
         await _create_log(client, headers, sleep_quality=i + 1, logged_for=d)
 
-    resp = await client.get("/api/recovery/logs?limit=2&offset=0", headers=headers)
+    resp = await client.get("/api/v1/recovery/logs?limit=2&offset=0", headers=headers)
     body = resp.json()
     assert len(body["items"]) == 2
     assert body["total"] == 5
     assert body["offset"] == 0
     assert body["limit"] == 2
 
-    resp2 = await client.get("/api/recovery/logs?limit=2&offset=4", headers=headers)
+    resp2 = await client.get("/api/v1/recovery/logs?limit=2&offset=4", headers=headers)
     body2 = resp2.json()
     assert len(body2["items"]) == 1
     assert body2["total"] == 5
@@ -184,7 +184,7 @@ async def test_list_logs_date_range(client: AsyncClient):
     await _create_log(client, headers, sleep_quality=5, logged_for=today.isoformat())
 
     resp = await client.get(
-        f"/api/recovery/logs?date_from={today.isoformat()}&date_to={today.isoformat()}",
+        f"/api/v1/recovery/logs?date_from={today.isoformat()}&date_to={today.isoformat()}",
         headers=headers,
     )
     body = resp.json()
@@ -201,7 +201,7 @@ async def test_list_logs_order_by_date_desc(client: AsyncClient):
     await _create_log(client, headers, sleep_quality=2, logged_for=yesterday.isoformat())
     await _create_log(client, headers, sleep_quality=5, logged_for=today.isoformat())
 
-    resp = await client.get("/api/recovery/logs", headers=headers)
+    resp = await client.get("/api/v1/recovery/logs", headers=headers)
     items = resp.json()["items"]
     assert items[0]["sleep_quality"] == 5  # today first
     assert items[1]["sleep_quality"] == 2  # yesterday second
@@ -217,7 +217,7 @@ async def test_get_log_by_date_success(client: AsyncClient):
     today = date.today().isoformat()
     await _create_log(client, headers, sleep_quality=4, logged_for=today)
 
-    resp = await client.get(f"/api/recovery/logs/{today}", headers=headers)
+    resp = await client.get(f"/api/v1/recovery/logs/{today}", headers=headers)
     assert resp.status_code == 200
     assert resp.json()["sleep_quality"] == 4
     assert resp.json()["logged_for"] == today
@@ -226,7 +226,7 @@ async def test_get_log_by_date_success(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_log_by_date_not_found(client: AsyncClient):
     data = await _register(client)
-    resp = await client.get("/api/recovery/logs/2020-01-01", headers=_auth(data))
+    resp = await client.get("/api/v1/recovery/logs/2020-01-01", headers=_auth(data))
     assert resp.status_code == 404
 
 
@@ -237,13 +237,13 @@ async def test_get_log_by_date_other_user(client: AsyncClient):
     today = date.today().isoformat()
     await _create_log(client, _auth(user1), sleep_quality=3, logged_for=today)
 
-    resp = await client.get(f"/api/recovery/logs/{today}", headers=_auth(user2))
+    resp = await client.get(f"/api/v1/recovery/logs/{today}", headers=_auth(user2))
     assert resp.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_get_log_by_date_unauthenticated(client: AsyncClient):
-    resp = await client.get(f"/api/recovery/logs/{date.today().isoformat()}")
+    resp = await client.get(f"/api/v1/recovery/logs/{date.today().isoformat()}")
     assert resp.status_code in (401, 403)
 
 
@@ -253,7 +253,7 @@ async def test_get_log_by_date_unauthenticated(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_invalid_sleep_quality_above_range(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/recovery/logs", json={
+    resp = await client.post("/api/v1/recovery/logs", json={
         "sleep_quality": 6,
     }, headers=_auth(data))
     assert resp.status_code == 422
@@ -262,7 +262,7 @@ async def test_invalid_sleep_quality_above_range(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_invalid_soreness_below_range(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/recovery/logs", json={
+    resp = await client.post("/api/v1/recovery/logs", json={
         "soreness": 0,
     }, headers=_auth(data))
     assert resp.status_code == 422
@@ -271,7 +271,7 @@ async def test_invalid_soreness_below_range(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_invalid_energy_out_of_range(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/recovery/logs", json={
+    resp = await client.post("/api/v1/recovery/logs", json={
         "energy": -1,
     }, headers=_auth(data))
     assert resp.status_code == 422

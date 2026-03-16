@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { RefreshResponse } from '../types/auth'
 
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
 })
 
 // Request interceptor: attach access token
@@ -60,7 +60,7 @@ apiClient.interceptors.response.use(
 
     try {
       const { data } = await axios.post<RefreshResponse>(
-        '/api/auth/refresh',
+        '/api/v1/auth/refresh',
         { refresh_token: refreshToken },
       )
       localStorage.setItem('access_token', data.access_token)

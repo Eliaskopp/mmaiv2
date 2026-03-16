@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 
 async def _register(client: AsyncClient, email: str = "journal@example.com") -> dict:
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": "securepass123",
         "display_name": "Journal User",
@@ -25,7 +25,7 @@ async def _create_session(
     client: AsyncClient, headers: dict, **overrides,
 ) -> dict:
     payload = {"session_type": "muay_thai", **overrides}
-    resp = await client.post("/api/journal/sessions", json=payload, headers=headers)
+    resp = await client.post("/api/v1/journal/sessions", json=payload, headers=headers)
     assert resp.status_code == 201
     return resp.json()
 
@@ -100,7 +100,7 @@ async def test_create_session_all_fields(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_session_invalid_type(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/journal/sessions", json={
+    resp = await client.post("/api/v1/journal/sessions", json={
         "session_type": "yoga",
     }, headers=_auth(data))
     assert resp.status_code == 422
@@ -109,7 +109,7 @@ async def test_create_session_invalid_type(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_session_invalid_rpe(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/journal/sessions", json={
+    resp = await client.post("/api/v1/journal/sessions", json={
         "session_type": "boxing",
         "intensity_rpe": 11,
     }, headers=_auth(data))
@@ -119,7 +119,7 @@ async def test_create_session_invalid_rpe(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_session_invalid_duration(client: AsyncClient):
     data = await _register(client)
-    resp = await client.post("/api/journal/sessions", json={
+    resp = await client.post("/api/v1/journal/sessions", json={
         "session_type": "boxing",
         "duration_minutes": 0,
     }, headers=_auth(data))
@@ -128,7 +128,7 @@ async def test_create_session_invalid_duration(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_create_session_unauthenticated(client: AsyncClient):
-    resp = await client.post("/api/journal/sessions", json={
+    resp = await client.post("/api/v1/journal/sessions", json={
         "session_type": "bjj_gi",
     })
     assert resp.status_code in (401, 403)
@@ -140,7 +140,7 @@ async def test_create_session_unauthenticated(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_sessions_empty(client: AsyncClient):
     data = await _register(client)
-    resp = await client.get("/api/journal/sessions", headers=_auth(data))
+    resp = await client.get("/api/v1/journal/sessions", headers=_auth(data))
     assert resp.status_code == 200
     body = resp.json()
     assert body["items"] == []
@@ -156,7 +156,7 @@ async def test_list_sessions_own_only(client: AsyncClient):
     await _create_session(client, _auth(user1), title="User1 session")
     await _create_session(client, _auth(user2), title="User2 session")
 
-    resp = await client.get("/api/journal/sessions", headers=_auth(user1))
+    resp = await client.get("/api/v1/journal/sessions", headers=_auth(user1))
     body = resp.json()
     assert body["total"] == 1
     assert body["items"][0]["title"] == "User1 session"
@@ -169,14 +169,14 @@ async def test_list_sessions_pagination(client: AsyncClient):
     for i in range(5):
         await _create_session(client, headers, title=f"Session {i}")
 
-    resp = await client.get("/api/journal/sessions?limit=2&offset=0", headers=headers)
+    resp = await client.get("/api/v1/journal/sessions?limit=2&offset=0", headers=headers)
     body = resp.json()
     assert len(body["items"]) == 2
     assert body["total"] == 5
     assert body["offset"] == 0
     assert body["limit"] == 2
 
-    resp2 = await client.get("/api/journal/sessions?limit=2&offset=4", headers=headers)
+    resp2 = await client.get("/api/v1/journal/sessions?limit=2&offset=4", headers=headers)
     body2 = resp2.json()
     assert len(body2["items"]) == 1
     assert body2["total"] == 5
@@ -193,7 +193,7 @@ async def test_list_sessions_date_range(client: AsyncClient):
     await _create_session(client, headers, session_date=today.isoformat(), title="Today")
 
     resp = await client.get(
-        f"/api/journal/sessions?date_from={today.isoformat()}&date_to={tomorrow}",
+        f"/api/v1/journal/sessions?date_from={today.isoformat()}&date_to={tomorrow}",
         headers=headers,
     )
     body = resp.json()
@@ -208,7 +208,7 @@ async def test_list_sessions_type_filter(client: AsyncClient):
     await _create_session(client, headers, session_type="boxing", title="Boxing")
     await _create_session(client, headers, session_type="bjj_gi", title="BJJ")
 
-    resp = await client.get("/api/journal/sessions?session_type=boxing", headers=headers)
+    resp = await client.get("/api/v1/journal/sessions?session_type=boxing", headers=headers)
     body = resp.json()
     assert body["total"] == 1
     assert body["items"][0]["title"] == "Boxing"
@@ -223,7 +223,7 @@ async def test_list_sessions_order_by_date_desc(client: AsyncClient):
     await _create_session(client, headers, session_date=yesterday, title="Older")
     await _create_session(client, headers, session_date=today.isoformat(), title="Newer")
 
-    resp = await client.get("/api/journal/sessions", headers=headers)
+    resp = await client.get("/api/v1/journal/sessions", headers=headers)
     items = resp.json()["items"]
     assert items[0]["title"] == "Newer"
     assert items[1]["title"] == "Older"
@@ -238,7 +238,7 @@ async def test_get_session_success(client: AsyncClient):
     headers = _auth(data)
     created = await _create_session(client, headers, title="Test Get")
 
-    resp = await client.get(f"/api/journal/sessions/{created['id']}", headers=headers)
+    resp = await client.get(f"/api/v1/journal/sessions/{created['id']}", headers=headers)
     assert resp.status_code == 200
     assert resp.json()["title"] == "Test Get"
 
@@ -247,7 +247,7 @@ async def test_get_session_success(client: AsyncClient):
 async def test_get_session_not_found(client: AsyncClient):
     data = await _register(client)
     fake_id = str(uuid.uuid4())
-    resp = await client.get(f"/api/journal/sessions/{fake_id}", headers=_auth(data))
+    resp = await client.get(f"/api/v1/journal/sessions/{fake_id}", headers=_auth(data))
     assert resp.status_code == 404
 
 
@@ -258,7 +258,7 @@ async def test_get_session_other_user(client: AsyncClient):
     created = await _create_session(client, _auth(user1))
 
     resp = await client.get(
-        f"/api/journal/sessions/{created['id']}", headers=_auth(user2),
+        f"/api/v1/journal/sessions/{created['id']}", headers=_auth(user2),
     )
     assert resp.status_code == 404
 
@@ -275,7 +275,7 @@ async def test_update_session_partial(client: AsyncClient):
     )
 
     resp = await client.patch(
-        f"/api/journal/sessions/{created['id']}",
+        f"/api/v1/journal/sessions/{created['id']}",
         json={"title": "Updated"},
         headers=headers,
     )
@@ -295,7 +295,7 @@ async def test_update_session_exertion_recomputed(client: AsyncClient):
     assert created["exertion_load"] == 300.0
 
     resp = await client.patch(
-        f"/api/journal/sessions/{created['id']}",
+        f"/api/v1/journal/sessions/{created['id']}",
         json={"intensity_rpe": 8},
         headers=headers,
     )
@@ -307,7 +307,7 @@ async def test_update_session_not_found(client: AsyncClient):
     data = await _register(client)
     fake_id = str(uuid.uuid4())
     resp = await client.patch(
-        f"/api/journal/sessions/{fake_id}",
+        f"/api/v1/journal/sessions/{fake_id}",
         json={"title": "Nope"},
         headers=_auth(data),
     )
@@ -321,7 +321,7 @@ async def test_update_session_other_user(client: AsyncClient):
     created = await _create_session(client, _auth(user1))
 
     resp = await client.patch(
-        f"/api/journal/sessions/{created['id']}",
+        f"/api/v1/journal/sessions/{created['id']}",
         json={"title": "Hacked"},
         headers=_auth(user2),
     )
@@ -335,7 +335,7 @@ async def test_update_session_invalid_data(client: AsyncClient):
     created = await _create_session(client, headers)
 
     resp = await client.patch(
-        f"/api/journal/sessions/{created['id']}",
+        f"/api/v1/journal/sessions/{created['id']}",
         json={"intensity_rpe": 99},
         headers=headers,
     )
@@ -352,14 +352,14 @@ async def test_delete_session_success(client: AsyncClient):
     created = await _create_session(client, headers, title="To Delete")
 
     resp = await client.delete(
-        f"/api/journal/sessions/{created['id']}", headers=headers,
+        f"/api/v1/journal/sessions/{created['id']}", headers=headers,
     )
     assert resp.status_code == 200
     assert resp.json()["message"] == "Session deleted"
 
     # Verify gone from GET
     get_resp = await client.get(
-        f"/api/journal/sessions/{created['id']}", headers=headers,
+        f"/api/v1/journal/sessions/{created['id']}", headers=headers,
     )
     assert get_resp.status_code == 404
 
@@ -369,7 +369,7 @@ async def test_delete_session_not_found(client: AsyncClient):
     data = await _register(client)
     fake_id = str(uuid.uuid4())
     resp = await client.delete(
-        f"/api/journal/sessions/{fake_id}", headers=_auth(data),
+        f"/api/v1/journal/sessions/{fake_id}", headers=_auth(data),
     )
     assert resp.status_code == 404
 
@@ -381,14 +381,14 @@ async def test_delete_session_other_user(client: AsyncClient):
     created = await _create_session(client, _auth(user1))
 
     resp = await client.delete(
-        f"/api/journal/sessions/{created['id']}", headers=_auth(user2),
+        f"/api/v1/journal/sessions/{created['id']}", headers=_auth(user2),
     )
     assert resp.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_delete_session_unauthenticated(client: AsyncClient):
-    resp = await client.delete(f"/api/journal/sessions/{uuid.uuid4()}")
+    resp = await client.delete(f"/api/v1/journal/sessions/{uuid.uuid4()}")
     assert resp.status_code in (401, 403)
 
 
@@ -399,9 +399,9 @@ async def test_soft_deleted_not_in_list(client: AsyncClient):
     s1 = await _create_session(client, headers, title="Keep")
     s2 = await _create_session(client, headers, title="Delete Me")
 
-    await client.delete(f"/api/journal/sessions/{s2['id']}", headers=headers)
+    await client.delete(f"/api/v1/journal/sessions/{s2['id']}", headers=headers)
 
-    resp = await client.get("/api/journal/sessions", headers=headers)
+    resp = await client.get("/api/v1/journal/sessions", headers=headers)
     body = resp.json()
     assert body["total"] == 1
     assert body["items"][0]["title"] == "Keep"
@@ -413,10 +413,10 @@ async def test_soft_deleted_returns_404_on_get(client: AsyncClient):
     headers = _auth(data)
     created = await _create_session(client, headers)
 
-    await client.delete(f"/api/journal/sessions/{created['id']}", headers=headers)
+    await client.delete(f"/api/v1/journal/sessions/{created['id']}", headers=headers)
 
     resp = await client.get(
-        f"/api/journal/sessions/{created['id']}", headers=headers,
+        f"/api/v1/journal/sessions/{created['id']}", headers=headers,
     )
     assert resp.status_code == 404
 

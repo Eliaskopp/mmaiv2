@@ -1,11 +1,11 @@
 import uuid
 from datetime import date
 
-from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import EntityNotFoundError
 from app.models.journal import RecoveryLog
 
 
@@ -81,8 +81,5 @@ async def get_log_by_date(
     )
     log = result.scalar_one_or_none()
     if log is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recovery log not found",
-        )
+        raise EntityNotFoundError("Recovery log")
     return log

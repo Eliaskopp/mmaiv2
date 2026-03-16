@@ -1,9 +1,10 @@
 import uuid
+from datetime import date
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import ConflictError, EntityNotFoundError
 from app.models.profile import TrainingProfile
 
 # Fields that contribute to profile completeness score.
@@ -41,16 +42,13 @@ async def create_profile(
 ) -> TrainingProfile:
     """Create a training profile for a user.
 
-    Raises HTTPException 409 if the user already has a profile.
+    Raises ConflictError if the user already has a profile.
     """
     result = await db.execute(
         select(TrainingProfile).where(TrainingProfile.user_id == user_id)
     )
     if result.scalar_one_or_none() is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Profile already exists",
-        )
+        raise ConflictError("Profile already exists")
 
     profile = TrainingProfile(user_id=user_id, **data)
     profile.profile_completeness = _calculate_completeness(profile)
@@ -66,17 +64,14 @@ async def get_profile(
 ) -> TrainingProfile:
     """Return the user's training profile.
 
-    Raises HTTPException 404 if no profile exists.
+    Raises EntityNotFoundError if no profile exists.
     """
     result = await db.execute(
         select(TrainingProfile).where(TrainingProfile.user_id == user_id)
     )
     profile = result.scalar_one_or_none()
     if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Profile not found",
-        )
+        raise EntityNotFoundError("Profile")
     return profile
 
 
@@ -87,7 +82,7 @@ async def update_profile(
 ) -> TrainingProfile:
     """Partial-update the user's training profile.
 
-    Only keys present in *data* are written. Raises HTTPException 404
+    Only keys present in *data* are written. Raises EntityNotFoundError
     if no profile exists yet.
     """
     profile = await get_profile(db, user_id)
@@ -99,3 +94,49 @@ async def update_profile(
     await db.commit()
     await db.refresh(profile)
     return profile
+
+
+async def update_streak(
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    session_date: date,
+) -> None:
+    """Update the user's training streak based on a new session date.
+
+    Called from journal.create_session BEFORE commit.
+    Silently skips if the user has no profile.
+    Does NOT commit — caller is responsible for committing.
+    """
+    result = await db.execute(
+        select(TrainingProfile).where(TrainingProfile.user_id == user_id)
+    )
+    profile = result.scalar_one_or_none()
+    if profile is None:
+        return
+
+    last = profile.last_active_date
+
+    # Same-day — no double-counting
+    if last is not None and session_date == last:
+        return
+
+    # Backfill (past date before last_active_date) — don't corrupt streak
+    if last is not None and session_date < last:
+        return
+
+    if last is None:
+        # First ever session
+        profile.current_streak = 1
+    else:
+        gap = (session_date - last).days
+        if gap <= 2:
+            # gap=1: consecutive days, gap=2: 1 grace day used
+            profile.current_streak += 1
+        else:
+            # More than 1 day missed — reset
+            profile.current_streak = 1
+
+    profile.last_active_date = session_date
+
+    if profile.current_streak > profile.longest_streak:
+        profile.longest_streak = profile.current_streak

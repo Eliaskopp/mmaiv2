@@ -1,27 +1,26 @@
 import uuid
 from datetime import date
 
-from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
+from app.core.exceptions import EntityNotFoundError, QuotaExceededError
 from app.models.conversation import Conversation, Message, MessageRole
+from app.prompts.coach import COACH_SYSTEM_PROMPT
 from app.services.grok import GrokClient
-
-_DEFAULT_SYSTEM_PROMPT = "You are MMAi Coach, an AI martial arts coaching assistant."
+from app.services import usage as usage_service
 
 
 async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
     """Build a dynamic system prompt from the user's profile and today's recovery log.
 
-    Falls back to a generic prompt if no profile or recovery data exists.
+    Falls back to the coach persona if no profile or recovery data exists.
     """
     from app.services import profile as profile_service
     from app.services import recovery as recovery_service
 
-    parts: list[str] = [
-        "You are MMAi Coach, an AI martial arts coaching assistant.",
-    ]
+    context_lines: list[str] = []
 
     # Fetch profile — catch 404 gracefully
     try:
@@ -40,8 +39,8 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
         if profile.training_frequency:
             profile_parts.append(f"Training frequency: {profile.training_frequency}")
         if profile_parts:
-            parts.append("User Profile: " + ". ".join(profile_parts) + ".")
-    except HTTPException:
+            context_lines.append("User Profile: " + ". ".join(profile_parts) + ".")
+    except EntityNotFoundError:
         pass
 
     # Fetch today's recovery log — catch 404 gracefully
@@ -57,11 +56,12 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
         if log.notes:
             recovery_parts.append(f"Notes: {log.notes}")
         if recovery_parts:
-            parts.append("Today's Recovery: " + ". ".join(recovery_parts) + ".")
-    except HTTPException:
+            context_lines.append("Today's Recovery: " + ". ".join(recovery_parts) + ".")
+    except EntityNotFoundError:
         pass
 
-    return " ".join(parts)
+    athlete_context = "\n".join(context_lines) if context_lines else "No profile or recovery data available."
+    return COACH_SYSTEM_PROMPT.replace("{athlete_context}", athlete_context)
 
 
 async def create_conversation(
@@ -112,10 +112,7 @@ async def get_conversation(
     )
     conversation = result.scalar_one_or_none()
     if conversation is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Conversation not found",
-        )
+        raise EntityNotFoundError("Conversation")
     return conversation
 
 
@@ -135,6 +132,13 @@ async def send_message(
     conversation_id: uuid.UUID,
     content: str,
 ) -> tuple[Message, Message]:
+    # ── 0. Quota Check ─────────────────────────────────────────────────
+    within_quota = await usage_service.check_quota(
+        db, user_id, settings.daily_message_limit,
+    )
+    if not within_quota:
+        raise QuotaExceededError()
+
     # ── 1. DB Reads ──────────────────────────────────────────────────────
     conversation = await get_conversation(db, user_id, conversation_id)
 
@@ -157,7 +161,7 @@ async def send_message(
 
     # ── 3. Network I/O (no DB transaction held open) ─────────────────────
     grok = GrokClient()
-    assistant_content = await grok.chat(chat_history, system_prompt=system_prompt)
+    assistant_content = await grok.chat_with_search(chat_history, system_prompt=system_prompt)
 
     # ── 4. DB Writes (atomic) ────────────────────────────────────────────
     user_msg = Message(
@@ -172,7 +176,13 @@ async def send_message(
     )
     db.add(user_msg)
     db.add(assistant_msg)
+
+    if conversation.message_count == 0:
+        conversation.title = await grok.generate_title(content)
+
     conversation.message_count += 2
+
+    await usage_service.increment_message_count(db, user_id)
 
     await db.commit()
     await db.refresh(user_msg)

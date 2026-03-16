@@ -6,6 +6,7 @@ from app.models.journal import TrainingSession, RecoveryLog
 from app.models.note import Note
 from app.models.achievement import Achievement, UserAchievement
 from app.models.streak import StreakDay
+from app.models.usage import UsageRecord
 
 __all__ = [
     "Base",
@@ -19,4 +20,5 @@ __all__ = [
     "Achievement",
     "UserAchievement",
     "StreakDay",
+    "UsageRecord",
 ]

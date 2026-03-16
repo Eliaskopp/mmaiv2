@@ -1,7 +1,7 @@
 import enum
 import uuid
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, Text
+from sqlalchemy import Boolean, Enum as SAEnum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -32,18 +32,23 @@ class Note(UUIDMixin, TimestampMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True,
     )
-    type: Mapped[NoteType] = mapped_column(nullable=False)
+    type: Mapped[NoteType] = mapped_column(
+        SAEnum(NoteType, values_callable=lambda e: [x.value for x in e]),
+        nullable=False,
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     summary: Mapped[str | None] = mapped_column(Text)
     user_notes: Mapped[str | None] = mapped_column(Text)
 
     status: Mapped[NoteStatus] = mapped_column(
+        SAEnum(NoteStatus, values_callable=lambda e: [x.value for x in e]),
         nullable=False, server_default=NoteStatus.ACTIVE.value,
     )
     pinned: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default="false",
     )
     source: Mapped[NoteSource] = mapped_column(
+        SAEnum(NoteSource, values_callable=lambda e: [x.value for x in e]),
         nullable=False, server_default=NoteSource.AI.value,
     )
     source_conversation_id: Mapped[uuid.UUID | None] = mapped_column(

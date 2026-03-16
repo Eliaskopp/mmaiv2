@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # AI
     grok_api_key: str = ""
     grok_base_url: str = "https://api.x.ai/v1"
+    grok_search_model: str = "grok-3-mini"
+    daily_message_limit: int = 50
 
     model_config = {
         "env_file": str(BACKEND_DIR / ".env"),

@@ -17,6 +17,7 @@ venv/
 .env
 .env.local
 .env.*.local
+.env.save
 
 # Node
 node_modules/

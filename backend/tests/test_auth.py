@@ -7,7 +7,7 @@ from tests.conftest import db_execute, db_fetchval
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _register(client: AsyncClient, email: str = "test@example.com") -> dict:
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": "securepass123",
         "display_name": "Test User",
@@ -19,7 +19,7 @@ async def _register(client: AsyncClient, email: str = "test@example.com") -> dic
 
 @pytest.mark.asyncio
 async def test_register_success(client: AsyncClient):
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": "test@example.com",
         "password": "securepass123",
         "display_name": "Test User",
@@ -41,14 +41,14 @@ async def test_register_duplicate_email(client: AsyncClient):
         "password": "securepass123",
         "display_name": "First User",
     }
-    await client.post("/api/auth/register", json=payload)
-    resp = await client.post("/api/auth/register", json={**payload, "display_name": "Second User"})
+    await client.post("/api/v1/auth/register", json=payload)
+    resp = await client.post("/api/v1/auth/register", json={**payload, "display_name": "Second User"})
     assert resp.status_code == 409
 
 
 @pytest.mark.asyncio
 async def test_register_short_password(client: AsyncClient):
-    resp = await client.post("/api/auth/register", json={
+    resp = await client.post("/api/v1/auth/register", json={
         "email": "short@example.com",
         "password": "123",
         "display_name": "Short Pass",
@@ -61,7 +61,7 @@ async def test_register_short_password(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_login_success(client: AsyncClient):
     await _register(client, "login@example.com")
-    resp = await client.post("/api/auth/login", json={
+    resp = await client.post("/api/v1/auth/login", json={
         "email": "login@example.com",
         "password": "securepass123",
     })
@@ -72,7 +72,7 @@ async def test_login_success(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_login_wrong_password(client: AsyncClient):
     await _register(client, "wrong@example.com")
-    resp = await client.post("/api/auth/login", json={
+    resp = await client.post("/api/v1/auth/login", json={
         "email": "wrong@example.com",
         "password": "wrongpassword",
     })
@@ -81,7 +81,7 @@ async def test_login_wrong_password(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_login_nonexistent_user(client: AsyncClient):
-    resp = await client.post("/api/auth/login", json={
+    resp = await client.post("/api/v1/auth/login", json={
         "email": "nobody@example.com",
         "password": "securepass123",
     })
@@ -93,14 +93,14 @@ async def test_login_nonexistent_user(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_me_authenticated(client: AsyncClient):
     data = await _register(client, "me@example.com")
-    resp = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {data['access_token']}"})
+    resp = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {data['access_token']}"})
     assert resp.status_code == 200
     assert resp.json()["email"] == "me@example.com"
 
 
 @pytest.mark.asyncio
 async def test_me_no_token(client: AsyncClient):
-    resp = await client.get("/api/auth/me")
+    resp = await client.get("/api/v1/auth/me")
     assert resp.status_code in (401, 403)
 
 
@@ -109,7 +109,7 @@ async def test_me_no_token(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_refresh_token(client: AsyncClient):
     data = await _register(client, "refresh@example.com")
-    resp = await client.post("/api/auth/refresh", json={"refresh_token": data["refresh_token"]})
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": data["refresh_token"]})
     assert resp.status_code == 200
     assert "access_token" in resp.json()
 
@@ -117,7 +117,7 @@ async def test_refresh_token(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_refresh_with_access_token_fails(client: AsyncClient):
     data = await _register(client, "badrefresh@example.com")
-    resp = await client.post("/api/auth/refresh", json={"refresh_token": data["access_token"]})
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": data["access_token"]})
     assert resp.status_code == 401
 
 
@@ -125,7 +125,7 @@ async def test_refresh_with_access_token_fails(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_logout(client: AsyncClient):
-    resp = await client.post("/api/auth/logout")
+    resp = await client.post("/api/v1/auth/logout")
     assert resp.status_code == 200
     assert resp.json()["message"] == "Logged out successfully"
 
@@ -134,7 +134,7 @@ async def test_logout(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_verify_email_invalid_token(client: AsyncClient):
-    resp = await client.post("/api/auth/verify-email", json={"token": "invalid-token"})
+    resp = await client.post("/api/v1/auth/verify-email", json={"token": "invalid-token"})
     assert resp.status_code == 400
 
 
@@ -144,7 +144,7 @@ async def test_verify_email_valid_token(client: AsyncClient):
     token = await db_fetchval(
         "SELECT verification_token FROM users WHERE email = $1", "verify@example.com"
     )
-    resp = await client.post("/api/auth/verify-email", json={"token": token})
+    resp = await client.post("/api/v1/auth/verify-email", json={"token": token})
     assert resp.status_code == 200
     assert resp.json()["message"] == "Email verified successfully"
     is_verified = await db_fetchval(
@@ -163,7 +163,7 @@ async def test_verify_email_expired_token(client: AsyncClient):
     token = await db_fetchval(
         "SELECT verification_token FROM users WHERE email = $1", "expired@example.com"
     )
-    resp = await client.post("/api/auth/verify-email", json={"token": token})
+    resp = await client.post("/api/v1/auth/verify-email", json={"token": token})
     assert resp.status_code == 400
     assert "expired" in resp.json()["detail"].lower()
 
@@ -173,20 +173,20 @@ async def test_verify_email_expired_token(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_forgot_password_existing_email(client: AsyncClient):
     await _register(client, "forgot@example.com")
-    resp = await client.post("/api/auth/forgot-password", json={"email": "forgot@example.com"})
+    resp = await client.post("/api/v1/auth/forgot-password", json={"email": "forgot@example.com"})
     assert resp.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_forgot_password_unknown_email(client: AsyncClient):
     # Must return 200 even for unknown email — no user enumeration
-    resp = await client.post("/api/auth/forgot-password", json={"email": "nobody@example.com"})
+    resp = await client.post("/api/v1/auth/forgot-password", json={"email": "nobody@example.com"})
     assert resp.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_reset_password_invalid_token(client: AsyncClient):
-    resp = await client.post("/api/auth/reset-password", json={
+    resp = await client.post("/api/v1/auth/reset-password", json={
         "token": "invalid-token",
         "password": "newpassword123",
     })
@@ -196,18 +196,18 @@ async def test_reset_password_invalid_token(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_reset_password_success(client: AsyncClient):
     await _register(client, "reset@example.com")
-    await client.post("/api/auth/forgot-password", json={"email": "reset@example.com"})
+    await client.post("/api/v1/auth/forgot-password", json={"email": "reset@example.com"})
 
     token = await db_fetchval(
         "SELECT password_reset_token FROM users WHERE email = $1", "reset@example.com"
     )
-    resp = await client.post("/api/auth/reset-password", json={
+    resp = await client.post("/api/v1/auth/reset-password", json={
         "token": token,
         "password": "newpassword999",
     })
     assert resp.status_code == 200
 
-    login = await client.post("/api/auth/login", json={
+    login = await client.post("/api/v1/auth/login", json={
         "email": "reset@example.com",
         "password": "newpassword999",
     })
@@ -217,7 +217,7 @@ async def test_reset_password_success(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_reset_password_expired_token(client: AsyncClient):
     await _register(client, "resetexp@example.com")
-    await client.post("/api/auth/forgot-password", json={"email": "resetexp@example.com"})
+    await client.post("/api/v1/auth/forgot-password", json={"email": "resetexp@example.com"})
 
     await db_execute(
         "UPDATE users SET password_reset_sent_at = NOW() - INTERVAL '31 minutes' WHERE email = $1",
@@ -226,7 +226,7 @@ async def test_reset_password_expired_token(client: AsyncClient):
     token = await db_fetchval(
         "SELECT password_reset_token FROM users WHERE email = $1", "resetexp@example.com"
     )
-    resp = await client.post("/api/auth/reset-password", json={
+    resp = await client.post("/api/v1/auth/reset-password", json={
         "token": token,
         "password": "newpassword999",
     })

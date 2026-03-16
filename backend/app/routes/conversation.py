@@ -1,9 +1,10 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, get_db
+from app.core.limiter import limiter
 from app.models.user import User
 from app.schemas.auth import MessageResponse
 from app.schemas.conversation import (
@@ -16,6 +17,7 @@ from app.schemas.conversation import (
     MessageResponse as MsgResponse,
 )
 from app.services import conversation as conversation_service
+from app.services.extraction import extract_and_save_notes
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
@@ -85,14 +87,23 @@ async def delete_conversation(
     response_model=list[MsgResponse],
     status_code=201,
 )
+@limiter.limit("20/minute")
 async def send_message(
+    request: Request,
     conversation_id: uuid.UUID,
     body: MessageCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     user_msg, assistant_msg = await conversation_service.send_message(
         db, current_user.id, conversation_id, body.content,
+    )
+    background_tasks.add_task(
+        extract_and_save_notes,
+        assistant_content=assistant_msg.content,
+        user_id=current_user.id,
+        conversation_id=conversation_id,
     )
     return [
         MsgResponse.model_validate(user_msg),
