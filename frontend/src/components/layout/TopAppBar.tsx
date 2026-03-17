@@ -45,6 +45,7 @@ export function TopAppBar({ title }: TopAppBarProps) {
       <Flex
         as={Link}
         to="/profile"
+        aria-label="Profile"
         align="center"
         justify="center"
         w="40px"

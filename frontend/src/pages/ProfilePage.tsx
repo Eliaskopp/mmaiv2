@@ -210,7 +210,7 @@ export function ProfilePage() {
               borderRadius="full"
               colorScheme="brand"
             />
-            <Text fontFamily="mono" fontSize="sm" fontWeight="semibold">
+            <Text fontFamily="mono" fontSize="sm" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
               {profile?.profile_completeness ?? 0}%
             </Text>
           </Box>
@@ -220,7 +220,7 @@ export function ProfilePage() {
           <>
             <SimpleGrid columns={3} spacing={4} mb={3}>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.current_streak}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
@@ -228,7 +228,7 @@ export function ProfilePage() {
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.longest_streak}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
@@ -236,7 +236,7 @@ export function ProfilePage() {
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.grace_days_remaining}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">

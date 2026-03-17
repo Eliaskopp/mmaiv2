@@ -47,7 +47,7 @@ export function BottomNav() {
             align="center"
             justify="center"
             h="100%"
-            color={isActive ? 'brand.primary' : 'text.muted'}
+            color={isActive ? 'brand.primary' : 'text.secondary'}
             _hover={{ textDecoration: 'none' }}
             role="tab"
             aria-selected={isActive}

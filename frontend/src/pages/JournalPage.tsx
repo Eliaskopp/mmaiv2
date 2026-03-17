@@ -97,7 +97,7 @@ export function JournalPage() {
               {acwrLoading ? (
                 <Skeleton height="14px" width="140px" mt={1} />
               ) : (
-                <Text fontSize="xs" color="text.secondary">
+                <Text fontSize="xs" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   ACWR: {acwr?.acwr_ratio?.toFixed(2) ?? '--'} &middot;{' '}
                   {acwr?.risk_zone === 'optimal' ? 'Optimal' :
                    acwr?.risk_zone === 'high' ? 'High' :

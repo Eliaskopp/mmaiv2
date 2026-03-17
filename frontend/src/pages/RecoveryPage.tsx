@@ -219,6 +219,8 @@ export function RecoveryPage() {
                       step={1}
                       value={field.value}
                       onChange={field.onChange}
+                      aria-label="Sleep Quality"
+                      aria-valuetext={SLEEP_LABELS[field.value]}
                     >
                       <SliderTrack>
                         <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />

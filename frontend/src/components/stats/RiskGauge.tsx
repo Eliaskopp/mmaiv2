@@ -118,10 +118,10 @@ export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
 
       {/* Zone labels below the gauge */}
       <Box display="flex" justifyContent="space-between" width="100%" maxW={`${size}px`} px={2} mt={-1}>
-        <Text fontSize="2xs" color="text.muted">0</Text>
-        <Text fontSize="2xs" color="text.muted">0.8</Text>
-        <Text fontSize="2xs" color="text.muted">1.3</Text>
-        <Text fontSize="2xs" color="text.muted">2.0</Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>0</Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>0.8</Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>1.3</Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>2.0</Text>
       </Box>
     </Box>
   )

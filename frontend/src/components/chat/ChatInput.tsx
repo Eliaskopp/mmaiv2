@@ -75,6 +75,7 @@ export function ChatInput({ onSend, isDisabled, onLogSession, onAttachNote }: Ch
       />
       <Textarea
         ref={textareaRef}
+        aria-label="Type your message"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
