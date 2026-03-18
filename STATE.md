@@ -1,0 +1,1 @@
+/home/mmai/Digital Mind/MMAi-V2/STATE.md
