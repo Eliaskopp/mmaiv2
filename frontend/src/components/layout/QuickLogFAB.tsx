@@ -28,9 +28,8 @@ export function QuickLogFAB() {
       <MotionBox
         ref={btnRef}
         position="fixed"
-        bottom="32px"
-        left="50%"
-        transform="translateX(-50%)"
+        bottom="80px"
+        right="20px"
         zIndex="overlay"
         w="56px"
         h="56px"
