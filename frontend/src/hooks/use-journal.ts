@@ -34,6 +34,8 @@ export function useCreateJournalSession() {
     mutationFn: (body: SessionCreate) => createSession(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
     },
   })
 }
@@ -44,6 +46,8 @@ export function useUpdateJournalSession() {
     mutationFn: ({ id, body }: { id: string; body: SessionUpdate }) => updateSession(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
     },
   })
 }
@@ -54,6 +58,8 @@ export function useDeleteJournalSession() {
     mutationFn: (id: string) => deleteSession(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
     },
   })
 }
