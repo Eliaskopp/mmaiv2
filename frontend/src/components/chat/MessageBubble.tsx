@@ -1,5 +1,4 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
-import { Bot } from 'lucide-react'
+import { Box, Flex, Image, Text } from '@chakra-ui/react'
 import { MarkdownContent } from './MarkdownContent'
 import { CitationBadge } from './CitationBadge'
 import type { Citation } from './CitationBadge'
@@ -34,16 +33,7 @@ export function MessageBubble({
       <Box maxW="85%">
         {!isUser && (
           <Flex align="center" gap={1.5} mb={1}>
-            <Flex
-              align="center"
-              justify="center"
-              w="22px"
-              h="22px"
-              borderRadius="full"
-              bg="brand.subtle"
-            >
-              <Bot size={14} color="#FF6B35" />
-            </Flex>
+            <Image src="/logo-symbol.png" alt="MMAi" w="22px" h="22px" />
             <Text fontSize="xs" color="text.muted" fontWeight="600">
               MMAi Coach
             </Text>

@@ -7,6 +7,7 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  Image,
   Input,
   Text,
   VStack,
@@ -46,6 +47,7 @@ export function RegisterPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
+        <Image src="/logo.png" alt="MMAi" h="40px" mx="auto" />
         <Heading textAlign="center">Create Account</Heading>
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
@@ -79,7 +81,7 @@ export function RegisterPage() {
             </FormControl>
             <Button
               type="submit"
-              colorScheme="blue"
+              colorScheme="brand"
               width="full"
               isLoading={isSubmitting}
             >
@@ -89,7 +91,7 @@ export function RegisterPage() {
         </Box>
         <Text textAlign="center" fontSize="sm">
           Already have an account?{' '}
-          <Text as={Link} to="/login" color="blue.500" fontWeight="medium">
+          <Text as={Link} to="/login" color="brand.primary" fontWeight="medium">
             Sign In
           </Text>
         </Text>

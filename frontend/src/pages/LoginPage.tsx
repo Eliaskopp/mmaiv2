@@ -7,6 +7,7 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  Image,
   Input,
   Text,
   VStack,
@@ -48,6 +49,7 @@ export function LoginPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
+        <Image src="/logo.png" alt="MMAi" h="40px" mx="auto" />
         <Heading textAlign="center">Sign In</Heading>
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
@@ -71,7 +73,7 @@ export function LoginPage() {
             </FormControl>
             <Button
               type="submit"
-              colorScheme="blue"
+              colorScheme="brand"
               width="full"
               isLoading={isSubmitting}
             >
@@ -81,9 +83,10 @@ export function LoginPage() {
         </Box>
         <Text textAlign="center" fontSize="sm">
           Don't have an account?{' '}
-          <Text as={Link} to="/register" color="blue.500" fontWeight="medium">
+          <Text as={Link} to="/register" color="brand.primary" fontWeight="medium">
             Register
           </Text>
+
         </Text>
       </VStack>
     </Container>

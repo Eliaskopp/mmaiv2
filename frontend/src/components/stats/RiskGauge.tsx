@@ -1,17 +1,9 @@
-import { Box, Text } from '@chakra-ui/react'
+import { Box, Text, useToken } from '@chakra-ui/react'
 
 interface RiskGaugeProps {
   ratio: number | null
   size?: number
 }
-
-// Zone boundaries on the 0–2.0 scale
-const ZONES = [
-  { from: 0, to: 0.8, color: '#60A5FA' },   // low — accent blue
-  { from: 0.8, to: 1.3, color: '#22C55E' },  // optimal — green
-  { from: 1.3, to: 1.5, color: '#FB923C' },  // high — orange
-  { from: 1.5, to: 2.0, color: '#EF4444' },  // very high — red
-]
 
 const MAX_RATIO = 2.0
 const CX = 110
@@ -46,6 +38,17 @@ function arcPath(startRatio: number, endRatio: number): string {
 }
 
 export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
+  const [accentBlue, green400, orange400, red500] = useToken('colors', [
+    'accent.blue', 'green.400', 'orange.400', 'red.500',
+  ])
+
+  const ZONES = [
+    { from: 0, to: 0.8, color: accentBlue },   // low
+    { from: 0.8, to: 1.3, color: green400 },    // optimal
+    { from: 1.3, to: 1.5, color: orange400 },   // high
+    { from: 1.5, to: 2.0, color: red500 },      // very high
+  ]
+
   const effectiveRatio = ratio ?? 0
   const needleAngle = ratioToAngle(effectiveRatio)
   const needleTip = pointOnArc(needleAngle)

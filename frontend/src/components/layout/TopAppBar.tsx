@@ -1,4 +1,4 @@
-import { Flex, Text } from '@chakra-ui/react'
+import { Flex, Image, Text } from '@chakra-ui/react'
 import { User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -19,16 +19,9 @@ export function TopAppBar({ title }: TopAppBarProps) {
       align="center"
       justify="space-between"
     >
-      <Text
-        as={Link}
-        to="/chat"
-        fontWeight="bold"
-        fontSize="xl"
-        color="#F5F0E8"
-        flexShrink={0}
-      >
-        MMAi
-      </Text>
+      <Link to="/chat">
+        <Image src="/logo.png" alt="MMAi" h="28px" />
+      </Link>
 
       {title && (
         <Text

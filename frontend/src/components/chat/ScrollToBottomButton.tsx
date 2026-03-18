@@ -25,7 +25,7 @@ export function ScrollToBottomButton({ isVisible, onClick }: ScrollToBottomButto
           borderRadius="full"
           bg="bg.panel"
           color="text.secondary"
-          boxShadow="0 2px 8px rgba(0,0,0,0.3)"
+          boxShadow="lg"
           _hover={{ bg: 'bg.muted' }}
           onClick={onClick}
           initial={{ opacity: 0, scale: 0.8 }}

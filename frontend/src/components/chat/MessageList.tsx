@@ -50,8 +50,9 @@ export function MessageList({
           h="64px"
           borderRadius="full"
           bg="brand.subtle"
+          color="brand.primary"
         >
-          <MessageCircle size={32} color="#FF6B35" />
+          <MessageCircle size={32} color="currentColor" />
         </Flex>
         <Text color="text.secondary" fontSize="lg" fontWeight="medium">
           Start a conversation
