@@ -73,8 +73,9 @@ export function StatsPage() {
         {/* Volume Section Toggle + Day Selector */}
         <Flex align="center" justify="space-between">
           <Button
-            variant="link"
+            variant="ghost"
             size="sm"
+            minH="44px"
             color="text.secondary"
             onClick={() => setShowChart((v) => !v)}
             _hover={{ color: 'text.primary' }}

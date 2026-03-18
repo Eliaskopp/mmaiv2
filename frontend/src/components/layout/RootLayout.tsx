@@ -14,7 +14,7 @@ export function RootLayout() {
   return (
     <Flex direction="column" minH="100dvh" bg="bg.canvas">
       <TopAppBar title={pageTitle} />
-      <Box as="main" flex="1" overflowY="auto" pb="80px">
+      <Box as="main" flex="1" overflowY="auto" pb="96px">
         <Outlet context={outletContext} />
       </Box>
       <BottomNav />
