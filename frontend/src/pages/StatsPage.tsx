@@ -58,6 +58,7 @@ export function StatsPage() {
             acwrRatio={acwr.acwr_ratio}
             acuteLoad={acwr.acute_load}
             chronicLoad={acwr.chronic_load}
+            isCalibrating={acwr.is_calibrating}
           />
         ) : null}
 
@@ -67,7 +68,7 @@ export function StatsPage() {
             <Skeleton height="130px" width="200px" borderRadius="lg" />
           </Flex>
         ) : (
-          <RiskGauge ratio={acwr?.acwr_ratio ?? null} />
+          <RiskGauge ratio={acwr?.acwr_ratio ?? null} isCalibrating={acwr?.is_calibrating} />
         )}
 
         {/* Volume Section Toggle + Day Selector */}
