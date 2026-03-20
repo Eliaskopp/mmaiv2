@@ -71,7 +71,6 @@ export function MessageList({
           key={msg.id}
           role={msg.role}
           content={msg.content}
-          createdAt={msg.created_at}
           isOptimistic={msg.id.startsWith('optimistic-')}
           metadata={msg.metadata_}
           onCitationClick={onCitationClick}

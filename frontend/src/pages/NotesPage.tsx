@@ -101,7 +101,7 @@ export function NotesPage() {
                 key={opt.value}
                 variant={isSelected ? 'solid' : 'outline'}
                 bg={isSelected ? 'brand.primary' : 'bg.muted'}
-                color={isSelected ? 'white' : 'text.primary'}
+                color={isSelected ? 'chat.user.text' : 'text.primary'}
                 borderColor="transparent"
                 _hover={{ bg: isSelected ? 'brand.600' : 'bg.panel' }}
                 onClick={() => setTypeFilter(isSelected ? null : opt.value as NoteType)}
@@ -120,7 +120,7 @@ export function NotesPage() {
           <Button
             variant={pinnedOnly ? 'solid' : 'outline'}
             bg={pinnedOnly ? 'brand.primary' : 'bg.muted'}
-            color={pinnedOnly ? 'white' : 'text.primary'}
+            color={pinnedOnly ? 'chat.user.text' : 'text.primary'}
             borderColor="transparent"
             _hover={{ bg: pinnedOnly ? 'brand.600' : 'bg.panel' }}
             onClick={togglePinned}

@@ -83,7 +83,7 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
                 align="center"
                 justify="center"
                 bg={getRPEColor(session.intensity_rpe)}
-                color="white"
+                color="chat.user.text"
                 borderRadius="full"
                 w="22px"
                 h="22px"

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import {
   Box,
   Button,
@@ -105,21 +105,19 @@ export function ProfilePage() {
   const is404 = isError && (error as AxiosError)?.response?.status === 404
   const hasProfile = !!profile
 
-  const { control, handleSubmit, reset, watch } = useForm<ProfileUpdate>({
+  const { control, handleSubmit, reset } = useForm<ProfileUpdate>({
     defaultValues: EMPTY_DEFAULTS,
   })
 
-  const weightClassValue = watch('weight_class') ?? ''
+  const weightClassValue = useWatch({ control, name: 'weight_class' }) ?? ''
   const isCustomWeightClass =
     weightClassValue !== '' && !WEIGHT_CLASS_KNOWN.includes(weightClassValue)
   const [showCustomWeight, setShowCustomWeight] = useState(false)
 
   // Sync showCustomWeight when form resets with an "Other" value
-  useEffect(() => {
-    if (isCustomWeightClass) {
-      setShowCustomWeight(true)
-    }
-  }, [isCustomWeightClass])
+  if (isCustomWeightClass && !showCustomWeight) {
+    setShowCustomWeight(true)
+  }
 
   useEffect(() => {
     if (profile) {

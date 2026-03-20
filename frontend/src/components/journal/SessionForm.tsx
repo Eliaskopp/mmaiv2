@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
   Box,
   Button,
+  Flex,
   FormControl,
   FormLabel,
+  IconButton,
   Input,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -15,6 +17,9 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react'
+import { keyframes } from '@emotion/react'
+import { Mic } from 'lucide-react'
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
 import { ChoiceChipGroup } from '../ChoiceChipGroup'
 import { TagInput } from '../TagInput'
 import { RPEPicker } from './RPEPicker'
@@ -78,15 +83,29 @@ function getDefaults(): FormValues {
   }
 }
 
+const micPulse = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(232, 81, 45, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(232, 81, 45, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(232, 81, 45, 0); }
+`
+
 export function SessionForm({ mode, editingSession, onSuccess, onCancel }: SessionFormProps) {
   const toast = useToast()
   const createMutation = useCreateJournalSession()
   const updateMutation = useUpdateJournalSession()
   const isEditing = !!editingSession
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { control, handleSubmit, reset, getValues, setValue: setFormValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: getDefaults(),
   })
+
+  const handleTranscriptComplete = useCallback((transcript: string) => {
+    const current = getValues('notes')
+    const spacer = current && !current.endsWith(' ') ? ' ' : ''
+    setFormValue('notes', current + spacer + transcript)
+  }, [getValues, setFormValue])
+
+  const speech = useSpeechRecognition({ onTranscriptComplete: handleTranscriptComplete })
 
   useEffect(() => {
     if (editingSession) {
@@ -390,7 +409,22 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
             </FormControl>
 
             <FormControl>
-              <FormLabel fontSize="sm">Notes</FormLabel>
+              <Flex align="center" justify="space-between">
+                <FormLabel fontSize="sm" mb={0}>Notes</FormLabel>
+                {speech.isSupported && (
+                  <IconButton
+                    aria-label={speech.isListening ? 'Stop listening' : 'Voice input'}
+                    icon={<Mic size={16} />}
+                    variant="ghost"
+                    color={speech.isListening ? 'brand.primary' : 'text.secondary'}
+                    borderRadius="full"
+                    size="xs"
+                    _hover={{ bg: 'bg.muted' }}
+                    onClick={speech.isListening ? speech.stopListening : speech.startListening}
+                    animation={speech.isListening ? `${micPulse} 1.5s infinite` : undefined}
+                  />
+                )}
+              </Flex>
               <Controller
                 name="notes"
                 control={control}

@@ -53,7 +53,7 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
             py={0.5}
             borderRadius="sm"
             bg={isAI ? 'accent.blue' : 'bg.panel'}
-            color={isAI ? 'white' : 'text.secondary'}
+            color={isAI ? 'chat.user.text' : 'text.secondary'}
             display="flex"
             alignItems="center"
             gap={1}

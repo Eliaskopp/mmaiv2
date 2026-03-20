@@ -1,7 +1,15 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Flex, IconButton, Textarea, useDisclosure } from '@chakra-ui/react'
-import { Plus, Send } from 'lucide-react'
+import { keyframes } from '@emotion/react'
+import { Mic, Plus, Send } from 'lucide-react'
 import { FloatingActionMenu } from './FloatingActionMenu'
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
+
+const pulse = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(232, 81, 45, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(232, 81, 45, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(232, 81, 45, 0); }
+`
 
 interface ChatInputProps {
   onSend: (content: string) => void
@@ -14,6 +22,15 @@ export function ChatInput({ onSend, isDisabled, onLogSession, onAttachNote }: Ch
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const menu = useDisclosure()
+
+  const handleTranscriptComplete = useCallback((transcript: string) => {
+    setValue((prev) => {
+      const spacer = prev && !prev.endsWith(' ') ? ' ' : ''
+      return prev + spacer + transcript
+    })
+  }, [])
+
+  const speech = useSpeechRecognition({ onTranscriptComplete: handleTranscriptComplete })
 
   function handleSend() {
     const trimmed = value.trim()
@@ -91,6 +108,19 @@ export function ChatInput({ onSend, isDisabled, onLogSession, onAttachNote }: Ch
         flex={1}
         fontSize="sm"
       />
+      {speech.isSupported && (
+        <IconButton
+          aria-label={speech.isListening ? 'Stop listening' : 'Voice input'}
+          icon={<Mic size={20} />}
+          variant="ghost"
+          color={speech.isListening ? 'brand.primary' : 'text.secondary'}
+          borderRadius="full"
+          size="md"
+          _hover={{ bg: 'bg.muted' }}
+          onClick={speech.isListening ? speech.stopListening : speech.startListening}
+          animation={speech.isListening ? `${pulse} 1.5s infinite` : undefined}
+        />
+      )}
       <IconButton
         aria-label="Send message"
         icon={<Send size={20} />}

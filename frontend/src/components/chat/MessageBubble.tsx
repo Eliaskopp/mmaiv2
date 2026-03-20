@@ -6,21 +6,14 @@ import type { Citation } from './CitationBadge'
 interface MessageBubbleProps {
   role: string
   content: string
-  createdAt: string
   isOptimistic?: boolean
   metadata?: Record<string, unknown> | null
   onCitationClick?: (citation: Citation) => void
 }
 
-function formatTime(iso: string): string {
-  const date = new Date(iso)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
 export function MessageBubble({
   role,
   content,
-  createdAt,
   isOptimistic,
   metadata,
   onCitationClick,
@@ -41,8 +34,8 @@ export function MessageBubble({
         )}
 
         <Box
-          bg={isUser ? 'brand.primary' : 'bg.subtle'}
-          color={isUser ? 'white' : 'text.primary'}
+          bg={isUser ? 'chat.user.bg' : 'bg.subtle'}
+          color={isUser ? 'chat.user.text' : 'text.primary'}
           px={4}
           py={3}
           borderRadius="2xl"
@@ -65,16 +58,6 @@ export function MessageBubble({
             </Flex>
           ) : null}
         </Box>
-
-        <Text
-          fontSize="2xs"
-          color="text.muted"
-          mt={1}
-          textAlign={isUser ? 'right' : 'left'}
-          px={1}
-        >
-          {formatTime(createdAt)}
-        </Text>
       </Box>
     </Flex>
   )

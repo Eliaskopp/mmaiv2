@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
   Box,
@@ -44,26 +44,25 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
 
   // Track pinned state locally for optimistic toggle
   const [localPinned, setLocalPinned] = useState(false)
-
-  useEffect(() => {
-    if (note) {
-      setLocalPinned(note.pinned)
-    }
-  }, [note?.id, note?.pinned])
+  const [prevNoteKey, setPrevNoteKey] = useState<string>()
 
   const { control, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: { title: '', summary: '', user_notes: '' },
   })
 
-  useEffect(() => {
+  // Sync local state when the note changes (React render-time adjustment)
+  const noteKey = note ? `${note.id}:${note.pinned}` : undefined
+  if (noteKey !== prevNoteKey) {
+    setPrevNoteKey(noteKey)
     if (note) {
+      setLocalPinned(note.pinned)
       reset({
         title: note.title,
         summary: note.summary ?? '',
         user_notes: note.user_notes ?? '',
       })
     }
-  }, [note, reset])
+  }
 
   function onSubmit(values: FormValues) {
     if (!note) return
