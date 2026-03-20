@@ -2,9 +2,14 @@ import { Button, Flex, Text, VStack } from '@chakra-ui/react'
 import { MessageCircle } from 'lucide-react'
 
 const SUGGESTED_PROMPTS = [
-  'How does the ACWR score calculate my injury risk?',
-  'What should I log in my daily journal?',
-  'How do you use my profile data to coach me?',
+  // App discovery
+  'What can you do as my AI coach?',
+  'How does my ACWR score track injury risk?',
+  'What should I log after each training session?',
+  // Coaching triggers
+  "I'm nervous about my first sparring session",
+  'Break down what makes a good rear cross',
+  'Help me debrief today\'s training session',
 ]
 
 interface EmptyChatStateProps {
