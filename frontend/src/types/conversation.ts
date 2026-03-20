@@ -15,6 +15,19 @@ export interface MessageResponse {
   created_at: string
 }
 
+export type MessageStatus = 'confirmed' | 'pending' | 'error'
+
+export type ChatMessage = MessageResponse & {
+  status: MessageStatus
+  errorReason?: string
+}
+
+export interface SendMessageVariables {
+  conversationId: string
+  content: string
+  retryId?: string
+}
+
 export interface ConversationResponse {
   id: string
   user_id: string

@@ -1,28 +1,28 @@
-import { Box, Flex, Image, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Image, Text } from '@chakra-ui/react'
+import { AlertCircle, RotateCcw } from 'lucide-react'
 import { MarkdownContent } from './MarkdownContent'
 import { CitationBadge } from './CitationBadge'
 import type { Citation } from './CitationBadge'
+import type { ChatMessage } from '../../types'
 
 interface MessageBubbleProps {
-  role: string
-  content: string
-  isOptimistic?: boolean
-  metadata?: Record<string, unknown> | null
+  message: ChatMessage
   onCitationClick?: (citation: Citation) => void
+  onRetry?: (message: ChatMessage) => void
 }
 
-export function MessageBubble({
-  role,
-  content,
-  isOptimistic,
-  metadata,
-  onCitationClick,
-}: MessageBubbleProps) {
+export function MessageBubble({ message, onCitationClick, onRetry }: MessageBubbleProps) {
+  const { role, content, status, metadata_ } = message
   const isUser = role === 'user'
-  const citations = metadata?.citations as Citation[] | undefined
+  const isError = status === 'error'
+  const isPending = status === 'pending'
+  const citations = metadata_?.citations as Citation[] | undefined
 
   return (
-    <Flex justify={isUser ? 'flex-end' : 'flex-start'} opacity={isOptimistic ? 0.7 : 1}>
+    <Flex
+      justify={isUser ? 'flex-end' : 'flex-start'}
+      opacity={isError ? 0.6 : isPending ? 0.7 : 1}
+    >
       <Box maxW="85%">
         {!isUser && (
           <Flex align="center" gap={1.5} mb={1}>
@@ -58,6 +58,26 @@ export function MessageBubble({
             </Flex>
           ) : null}
         </Box>
+
+        {isError && (
+          <Flex align="center" justify="flex-end" gap={2} mt={1} px={1}>
+            <Flex align="center" gap={1} color="red.400">
+              <AlertCircle size={14} />
+              <Text fontSize="xs">Send failed</Text>
+            </Flex>
+            {onRetry && (
+              <Button
+                variant="ghost"
+                size="xs"
+                color="brand.primary"
+                leftIcon={<RotateCcw size={12} />}
+                onClick={() => onRetry(message)}
+              >
+                Retry
+              </Button>
+            )}
+          </Flex>
+        )}
       </Box>
     </Flex>
   )

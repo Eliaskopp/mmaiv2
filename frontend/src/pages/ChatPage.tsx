@@ -29,7 +29,7 @@ import { CitationDrawer } from '../components/chat/CitationDrawer'
 import { EmptyChatState } from '../components/chat/EmptyChatState'
 import { SessionForm } from '../components/journal/SessionForm'
 import type { Citation } from '../components/chat/CitationBadge'
-import type { LayoutOutletContext } from '../types'
+import type { ChatMessage, LayoutOutletContext } from '../types'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
 
@@ -106,22 +106,25 @@ export function ChatPage() {
       { conversationId, content },
       {
         onError: (err) => {
-          const axiosErr = err as AxiosError<{ detail?: string; error?: string }>
-          const status = axiosErr?.response?.status
-          const detail = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.error
-          if (status === 429) {
+          const axiosErr = err as AxiosError
+          if (axiosErr?.response?.status === 429) {
             setQuotaExceeded(true)
-            toast({
-              title: detail || 'Rate limit reached. Please wait a moment.',
-              status: 'warning',
-              duration: 5000,
-            })
-          } else {
-            toast({
-              title: detail || 'Failed to send message',
-              status: 'error',
-              duration: 4000,
-            })
+          }
+        },
+      },
+    )
+  }
+
+  // Handle retry on failed message
+  function handleRetry(message: ChatMessage) {
+    if (!conversationId) return
+    sendMessage.mutate(
+      { conversationId, content: message.content, retryId: message.id },
+      {
+        onError: (err) => {
+          const axiosErr = err as AxiosError
+          if (axiosErr?.response?.status === 429) {
+            setQuotaExceeded(true)
           }
         },
       },
@@ -161,6 +164,7 @@ export function ChatPage() {
           scrollToBottom={scrollToBottom}
           anchorRef={anchorRef}
           onCitationClick={handleCitationClick}
+          onRetry={handleRetry}
         />
       )}
 
