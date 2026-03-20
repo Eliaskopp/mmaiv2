@@ -17,7 +17,7 @@ AI martial arts coaching platform V2 — a "Living Portfolio" app targeting Melb
 
 ## Ports
 
-- Backend: `8000`
+- Backend: `8001`
 - Frontend dev server: `5173`
 
 ## Database Rules
@@ -157,3 +157,16 @@ npm run lint         # ESLint check
 └── docs/
     └── adr/            # Architecture Decision Records
 ```
+
+## Agent Management Rules
+
+1. **Read ./STATE.md first** — At the start of every session, read the local `STATE.md` file before proposing any work. This is the source of truth for architecture, metrics, and milestones.
+2. **Small Bets Only** — Never refactor multiple pages/modules in one pass. One component, one endpoint, or one fix at a time. Commit after each successful small bet.
+3. **Zero V1 Contact** — Never touch `~/mmai-monolith/`, nginx configs for `www.mmai.coach`, PM2 process `mmai`, or database `mmai`. (Reinforces existing Zero Downtime Rule.)
+4. **Strict Typing** — Backend: all request/response shapes use Pydantic models, no raw dicts. Frontend: Chakra UI semantic tokens for theming, TypeScript strict mode.
+5. **Commit Cadence** — Git commit after every successful small bet (passing test, working component, fixed bug). Don't batch unrelated changes.
+6. **No Speculative Work** — Don't build features, abstractions, or "improvements" not explicitly requested. Discuss scope before coding.
+
+# STATE.md Write Protocol
+
+Never update STATE.md during intermediate steps, PRD drafting, or test writing. STATE.md is only to be updated upon the completion and successful testing of a full Vertical Slice (Issue) or Milestone.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm, useWatch, Controller } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -98,6 +99,7 @@ function formatDate(dateStr: string | null): string {
 
 export function ProfilePage() {
   const toast = useToast()
+  const [searchParams] = useSearchParams()
   const { data: profile, isLoading, isError, error } = useProfile()
   const createMutation = useCreateProfile()
   const updateMutation = useUpdateProfile()
@@ -190,9 +192,25 @@ export function ProfilePage() {
   // Derive the chip value for Weight Class
   const weightChipValue = showCustomWeight || isCustomWeightClass ? '__other__' : weightClassValue
 
+  const isOnboarding = searchParams.get('onboarding') === 'true'
+  const isIncomplete = (profile?.profile_completeness ?? 0) <= 50
+
+  let pageHeading = 'Profile'
+  let pageSubtext: string | null = null
+  if (!hasProfile || (isOnboarding && is404)) {
+    pageHeading = 'Welcome!'
+    pageSubtext = 'Set up your training profile to get started.'
+  } else if (isOnboarding || isIncomplete) {
+    pageHeading = 'Almost there'
+    pageSubtext = 'Fill in a few more details to unlock the coach.'
+  }
+
   return (
     <Container maxW="container.md" py={6}>
-      <Heading size="lg" mb={6}>Profile</Heading>
+      <Heading size="lg" mb={pageSubtext ? 1 : 6}>{pageHeading}</Heading>
+      {pageSubtext && (
+        <Text color="text.muted" mb={6}>{pageSubtext}</Text>
+      )}
 
       {/* Completeness Bar — always visible, 0% when no profile */}
       <Box bg="bg.subtle" p={4} borderRadius="lg" mb={8}>
