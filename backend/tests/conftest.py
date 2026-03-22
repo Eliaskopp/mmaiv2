@@ -1,4 +1,5 @@
 import os
+from unittest.mock import AsyncMock, patch
 
 import asyncpg
 import pytest
@@ -59,8 +60,14 @@ async def client():
 
     app.dependency_overrides[get_db] = override_get_db
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    # Mock all email sending — never hit Resend in tests
+    with (
+        patch("app.services.email.send_verification_otp_email", new_callable=AsyncMock),
+        patch("app.services.email.send_welcome_email", new_callable=AsyncMock),
+        patch("app.services.email.send_password_reset_email", new_callable=AsyncMock),
+    ):
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
 
     app.dependency_overrides.clear()
     await engine.dispose()
