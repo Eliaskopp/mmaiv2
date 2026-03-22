@@ -6,7 +6,6 @@ import {
   Container,
   FormControl,
   FormLabel,
-  Heading,
   Image,
   Input,
   Text,
@@ -33,7 +32,7 @@ export function RegisterPage() {
     setIsSubmitting(true)
     try {
       await register(email, password, displayName)
-      navigate('/chat', { replace: true })
+      navigate('/verify-email', { replace: true })
     } catch (err: unknown) {
       const detail =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
@@ -47,8 +46,7 @@ export function RegisterPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
-        <Image src="/logo.png" alt="MMAi" h="40px" mx="auto" />
-        <Heading textAlign="center">Create Account</Heading>
+        <Image src="/logo.png" alt="MMAi" h="64px" mx="auto" />
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
             <FormControl isRequired>

@@ -6,7 +6,6 @@ import {
   Container,
   FormControl,
   FormLabel,
-  Heading,
   Image,
   Input,
   Text,
@@ -49,8 +48,7 @@ export function LoginPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
-        <Image src="/logo.png" alt="MMAi" h="40px" mx="auto" />
-        <Heading textAlign="center">Sign In</Heading>
+        <Image src="/logo.png" alt="MMAi" h="64px" mx="auto" />
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
             <FormControl isRequired>

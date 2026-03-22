@@ -8,7 +8,7 @@ import type { AxiosError } from 'axios'
 const PROFILE_COMPLETENESS_THRESHOLD = 50
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const location = useLocation()
   const { data: profile, isLoading: profileLoading, isError, error } = useProfile()
 
@@ -22,6 +22,11 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  // Verification gate — redirect unverified users to the OTP screen
+  if (user && !user.is_verified) {
+    return <Navigate to="/verify-email" replace />
   }
 
   // Don't gate the profile page itself — avoid redirect loop

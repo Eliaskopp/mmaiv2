@@ -9,6 +9,7 @@ import theme from './theme'
 
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })))
 const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })))
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })))
 const ChatPage = lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })))
 const JournalPage = lazy(() => import('./pages/JournalPage').then(m => ({ default: m.JournalPage })))
 const NotesPage = lazy(() => import('./pages/NotesPage').then(m => ({ default: m.NotesPage })))
@@ -38,6 +39,7 @@ function App() {
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
 
                 {/* Protected routes */}
                 <Route
