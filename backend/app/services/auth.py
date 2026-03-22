@@ -2,11 +2,12 @@ import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.otp import generate_otp, is_otp_expired, verify_otp
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -17,7 +18,6 @@ from app.core.security import (
 from app.models.user import User
 from app.services import email as email_service
 
-VERIFICATION_TOKEN_EXPIRY_HOURS = 48
 PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 30
 
 
@@ -26,6 +26,7 @@ async def register_user(
     email: str,
     password: str,
     display_name: str,
+    background_tasks: BackgroundTasks | None = None,
 ) -> tuple[User, str, str]:
     """Register a new user. Returns (user, access_token, refresh_token).
 
@@ -38,20 +39,23 @@ async def register_user(
             detail="Email already registered",
         )
 
-    verification_token = secrets.token_urlsafe(32)
+    plaintext_otp, hashed_otp = generate_otp()
 
     user = User(
         email=email,
         hashed_password=hash_password(password),
         display_name=display_name,
-        verification_token=verification_token,
+        verification_token=hashed_otp,
         verification_sent_at=datetime.now(timezone.utc),
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
 
-    await email_service.send_verification_email(email, verification_token)
+    if background_tasks is not None:
+        background_tasks.add_task(email_service.send_verification_otp_email, email, plaintext_otp)
+    else:
+        await email_service.send_verification_otp_email(email, plaintext_otp)
 
     access = create_access_token(str(user.id))
     refresh = create_refresh_token(str(user.id))
@@ -126,28 +130,35 @@ async def refresh_access_token(
     return create_access_token(str(user.id))
 
 
-async def verify_email(db: AsyncSession, token: str) -> User:
-    """Mark a user as verified using their verification token.
+async def verify_email(
+    db: AsyncSession,
+    email: str,
+    code: str,
+    background_tasks: BackgroundTasks | None = None,
+) -> User:
+    """Verify a user's email using a 6-digit OTP code.
 
-    Raises HTTPException 400 on invalid or expired token.
+    Raises HTTPException 400 on invalid/expired code or unknown email.
     """
-    result = await db.execute(
-        select(User).where(User.verification_token == token)
-    )
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
-    if user is None:
+    if user is None or user.verification_token is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid verification token",
+            detail="Invalid verification code",
         )
 
-    if user.verification_sent_at is None or datetime.now(timezone.utc) - user.verification_sent_at > timedelta(
-        hours=VERIFICATION_TOKEN_EXPIRY_HOURS
-    ):
+    if is_otp_expired(user.verification_sent_at):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Verification token has expired",
+            detail="Verification code has expired",
+        )
+
+    if not verify_otp(code, user.verification_token):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code",
         )
 
     user.is_verified = True
@@ -156,9 +167,45 @@ async def verify_email(db: AsyncSession, token: str) -> User:
     await db.commit()
     await db.refresh(user)
 
-    await email_service.send_welcome_email(user.email, user.display_name)
+    if background_tasks is not None:
+        background_tasks.add_task(email_service.send_welcome_email, user.email, user.display_name)
+    else:
+        await email_service.send_welcome_email(user.email, user.display_name)
 
     return user
+
+
+async def resend_verification(
+    db: AsyncSession,
+    email: str,
+    background_tasks: BackgroundTasks | None = None,
+) -> None:
+    """Generate a new OTP and resend the verification email.
+
+    Returns silently for unknown emails (prevents user enumeration).
+    Raises HTTPException 400 if already verified.
+    """
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        return  # Silent — prevent user enumeration
+
+    if user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already verified",
+        )
+
+    plaintext_otp, hashed_otp = generate_otp()
+    user.verification_token = hashed_otp
+    user.verification_sent_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    if background_tasks is not None:
+        background_tasks.add_task(email_service.send_verification_otp_email, email, plaintext_otp)
+    else:
+        await email_service.send_verification_otp_email(email, plaintext_otp)
 
 
 async def request_password_reset(db: AsyncSession, email: str) -> None:
