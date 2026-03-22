@@ -19,6 +19,7 @@ from app.models import (  # noqa: F401 — register models for autogenerate
     note,
     achievement,
     streak,
+    memory,
 )
 
 # Alembic Config object
