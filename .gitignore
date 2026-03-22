@@ -44,3 +44,9 @@ htmlcov/
 
 # Alembic
 alembic/versions/__pycache__/
+
+# Runtime
+logs/
+
+# Claude Code
+.claude/
