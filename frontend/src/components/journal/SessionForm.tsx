@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  SimpleGrid,
   Textarea,
   VStack,
   useToast,
@@ -29,11 +30,27 @@ import type { SessionCreate, SessionUpdate, SessionResponse, SessionType } from 
 import type { AxiosError } from 'axios'
 
 const MOOD_OPTIONS = [
-  { value: '1', label: '1' },
-  { value: '2', label: '2' },
-  { value: '3', label: '3' },
-  { value: '4', label: '4' },
-  { value: '5', label: '5' },
+  { value: '1', label: 'Awful' },
+  { value: '2', label: 'Low' },
+  { value: '3', label: 'Okay' },
+  { value: '4', label: 'Good' },
+  { value: '5', label: 'Great' },
+]
+
+const ENERGY_OPTIONS = [
+  { value: '1', label: 'Drained' },
+  { value: '2', label: 'Low' },
+  { value: '3', label: 'Normal' },
+  { value: '4', label: 'Good' },
+  { value: '5', label: 'Energized' },
+]
+
+const DURATION_PRESETS = [
+  { value: '30', label: '30m' },
+  { value: '45', label: '45m' },
+  { value: '60', label: '60m' },
+  { value: '90', label: '90m' },
+  { value: '120', label: '2h' },
 ]
 
 interface FormValues {
@@ -98,6 +115,8 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
   const { control, handleSubmit, reset, getValues, setValue: setFormValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: getDefaults(),
   })
+
+  const durationValue = useWatch({ control, name: 'duration_minutes' })
 
   const handleTranscriptComplete = useCallback((transcript: string) => {
     const current = getValues('notes')
@@ -219,6 +238,27 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
         {/* Duration */}
         <FormControl>
           <FormLabel fontSize="sm">Duration (min)</FormLabel>
+          <SimpleGrid columns={5} spacing={2} mb={2}>
+            {DURATION_PRESETS.map((preset) => {
+              const isActive = durationValue === preset.value
+              return (
+                <Button
+                  key={preset.value}
+                  variant={isActive ? 'solid' : 'outline'}
+                  bg={isActive ? 'brand.primary' : 'bg.muted'}
+                  color={isActive ? 'chat.user.text' : 'text.primary'}
+                  borderColor="transparent"
+                  _hover={{ bg: isActive ? 'brand.600' : 'bg.panel' }}
+                  size="sm"
+                  minH="40px"
+                  onClick={() => setFormValue('duration_minutes', preset.value)}
+                  type="button"
+                >
+                  {preset.label}
+                </Button>
+              )
+            })}
+          </SimpleGrid>
           <Controller
             name="duration_minutes"
             control={control}
@@ -362,7 +402,7 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
                 control={control}
                 render={({ field }) => (
                   <ChoiceChipGroup
-                    options={MOOD_OPTIONS}
+                    options={ENERGY_OPTIONS}
                     value={field.value}
                     onChange={field.onChange}
                     columns={5}
