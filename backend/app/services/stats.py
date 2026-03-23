@@ -78,11 +78,13 @@ async def get_acwr(
     else:
         is_calibrating = True
 
+    effective_ratio = None if is_calibrating else ratio
+
     return {
         "acute_load": acute,
         "chronic_load": chronic,
-        "acwr_ratio": ratio,
-        "risk_zone": _risk_zone(ratio),
+        "acwr_ratio": effective_ratio,
+        "risk_zone": _risk_zone(effective_ratio),
         "is_calibrating": is_calibrating,
     }
 

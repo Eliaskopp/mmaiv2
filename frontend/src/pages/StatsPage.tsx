@@ -14,10 +14,13 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { ExertionStatus } from '../components/stats/ExertionStatus'
 import { RiskGauge } from '../components/stats/RiskGauge'
 import { VolumeTrendChart } from '../components/stats/VolumeTrendChart'
+import { MemoryPanel } from '../components/memory/MemoryPanel'
 import { useACWR, useVolumeTrends } from '../hooks/use-stats'
 import type { LayoutOutletContext } from '../types'
 
 const DAY_OPTIONS = [7, 14, 30] as const
+const TABS = ['volume', 'intelligence'] as const
+type Tab = typeof TABS[number]
 
 export function StatsPage() {
   const { setPageTitle } = useOutletContext<LayoutOutletContext>()
@@ -29,6 +32,19 @@ export function StatsPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
 
+  // ── Tab state from URL ─────────────────────────────────────────────
+  const rawTab = searchParams.get('tab')
+  const activeTab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'volume'
+
+  function setTab(tab: Tab) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (tab === 'volume') { next.delete('tab') } else { next.set('tab', tab) }
+      return next
+    }, { replace: true })
+  }
+
+  // ── Volume-specific state ──────────────────────────────────────────
   const rawDays = Number(searchParams.get('days'))
   const days = DAY_OPTIONS.includes(rawDays as typeof DAY_OPTIONS[number]) ? rawDays : 30
 
@@ -47,82 +63,110 @@ export function StatsPage() {
   return (
     <Container maxW="container.md" py={4}>
       <VStack spacing={4} align="stretch">
-        {/* ACWR Status Card */}
-        {acwrLoading ? (
-          <Skeleton height="120px" borderRadius="lg" />
-        ) : acwrError ? (
-          <Text color="red.400" fontSize="sm">Failed to load training status.</Text>
-        ) : acwr ? (
-          <ExertionStatus
-            riskZone={acwr.risk_zone}
-            acwrRatio={acwr.acwr_ratio}
-            acuteLoad={acwr.acute_load}
-            chronicLoad={acwr.chronic_load}
-            isCalibrating={acwr.is_calibrating}
-          />
-        ) : null}
+        {/* Tab bar */}
+        <HStack spacing={1} bg="bg.subtle" p={1} borderRadius="lg">
+          {TABS.map((tab) => (
+            <Button
+              key={tab}
+              size="sm"
+              flex={1}
+              variant={activeTab === tab ? 'solid' : 'ghost'}
+              colorScheme={activeTab === tab ? 'brand' : undefined}
+              color={activeTab !== tab ? 'text.secondary' : undefined}
+              onClick={() => setTab(tab)}
+              textTransform="capitalize"
+              fontWeight="medium"
+              minH="36px"
+            >
+              {tab}
+            </Button>
+          ))}
+        </HStack>
 
-        {/* Risk Gauge */}
-        {acwrLoading ? (
-          <Flex justify="center">
-            <Skeleton height="130px" width="200px" borderRadius="lg" />
-          </Flex>
-        ) : (
-          <RiskGauge ratio={acwr?.acwr_ratio ?? null} isCalibrating={acwr?.is_calibrating} />
+        {/* Volume tab */}
+        {activeTab === 'volume' && (
+          <>
+            {/* ACWR Status Card */}
+            {acwrLoading ? (
+              <Skeleton height="120px" borderRadius="lg" />
+            ) : acwrError ? (
+              <Text color="red.400" fontSize="sm">Failed to load training status.</Text>
+            ) : acwr ? (
+              <ExertionStatus
+                riskZone={acwr.risk_zone}
+                acwrRatio={acwr.acwr_ratio}
+                acuteLoad={acwr.acute_load}
+                chronicLoad={acwr.chronic_load}
+                isCalibrating={acwr.is_calibrating}
+              />
+            ) : null}
+
+            {/* Risk Gauge */}
+            {acwrLoading ? (
+              <Flex justify="center">
+                <Skeleton height="130px" width="200px" borderRadius="lg" />
+              </Flex>
+            ) : (
+              <RiskGauge ratio={acwr?.acwr_ratio ?? null} isCalibrating={acwr?.is_calibrating} />
+            )}
+
+            {/* Volume Section Toggle + Day Selector */}
+            <Flex align="center" justify="space-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                minH="44px"
+                color="text.secondary"
+                onClick={() => setShowChart((v) => !v)}
+                _hover={{ color: 'text.primary' }}
+              >
+                {showChart ? 'Hide' : 'Show'} Volume Trends
+              </Button>
+
+              {showChart && (
+                <HStack spacing={1}>
+                  {DAY_OPTIONS.map((opt) => (
+                    <Button
+                      key={opt}
+                      size="xs"
+                      variant={days === opt ? 'solid' : 'outline'}
+                      colorScheme={days === opt ? 'brand' : undefined}
+                      borderColor={days !== opt ? 'bg.panel' : undefined}
+                      color={days !== opt ? 'text.secondary' : undefined}
+                      onClick={() => setDays(opt)}
+                      minW="40px"
+                    >
+                      {opt}d
+                    </Button>
+                  ))}
+                </HStack>
+              )}
+            </Flex>
+
+            {/* Volume Chart */}
+            <Collapse in={showChart} animateOpacity>
+              {volumeLoading ? (
+                <Skeleton height="300px" borderRadius="lg" />
+              ) : volumeError ? (
+                <Text color="red.400" fontSize="sm">Failed to load volume trends.</Text>
+              ) : volume ? (
+                <VolumeTrendChart data={volume} />
+              ) : null}
+            </Collapse>
+
+            {/* Empty state hint */}
+            {acwr?.risk_zone === 'insufficient_data' && !acwrLoading && (
+              <Box bg="bg.subtle" p={4} borderRadius="lg" textAlign="center">
+                <Text fontSize="sm" color="text.muted">
+                  Log some training sessions to see your stats here.
+                </Text>
+              </Box>
+            )}
+          </>
         )}
 
-        {/* Volume Section Toggle + Day Selector */}
-        <Flex align="center" justify="space-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            minH="44px"
-            color="text.secondary"
-            onClick={() => setShowChart((v) => !v)}
-            _hover={{ color: 'text.primary' }}
-          >
-            {showChart ? 'Hide' : 'Show'} Volume Trends
-          </Button>
-
-          {showChart && (
-            <HStack spacing={1}>
-              {DAY_OPTIONS.map((opt) => (
-                <Button
-                  key={opt}
-                  size="xs"
-                  variant={days === opt ? 'solid' : 'outline'}
-                  colorScheme={days === opt ? 'brand' : undefined}
-                  borderColor={days !== opt ? 'bg.panel' : undefined}
-                  color={days !== opt ? 'text.secondary' : undefined}
-                  onClick={() => setDays(opt)}
-                  minW="40px"
-                >
-                  {opt}d
-                </Button>
-              ))}
-            </HStack>
-          )}
-        </Flex>
-
-        {/* Volume Chart */}
-        <Collapse in={showChart} animateOpacity>
-          {volumeLoading ? (
-            <Skeleton height="300px" borderRadius="lg" />
-          ) : volumeError ? (
-            <Text color="red.400" fontSize="sm">Failed to load volume trends.</Text>
-          ) : volume ? (
-            <VolumeTrendChart data={volume} />
-          ) : null}
-        </Collapse>
-
-        {/* Empty state hint */}
-        {acwr?.risk_zone === 'insufficient_data' && !acwrLoading && (
-          <Box bg="bg.subtle" p={4} borderRadius="lg" textAlign="center">
-            <Text fontSize="sm" color="text.muted">
-              Log some training sessions to see your stats here.
-            </Text>
-          </Box>
-        )}
+        {/* Intelligence tab */}
+        {activeTab === 'intelligence' && <MemoryPanel />}
       </VStack>
     </Container>
   )

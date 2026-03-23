@@ -7,6 +7,7 @@ import {
   deleteConversation,
   sendMessage,
 } from '../services/conversations'
+import { MEMORY_KEY } from './use-memory'
 import type {
   ConversationCreate,
   ChatMessage,
@@ -183,6 +184,7 @@ export function useSendMessage() {
       }
 
       queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEY })
+      queryClient.invalidateQueries({ queryKey: [...MEMORY_KEY] })
     },
 
     onError: (error, { conversationId }, context) => {
