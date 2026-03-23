@@ -72,3 +72,13 @@ async def client():
     app.dependency_overrides.clear()
     await engine.dispose()
     limiter.enabled = True
+
+
+@pytest.fixture
+async def db_session():
+    """Standalone async session for service-level tests (uses test DB)."""
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with session_maker() as session:
+        yield session
+    await engine.dispose()
