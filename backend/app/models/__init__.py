@@ -7,6 +7,7 @@ from app.models.note import Note
 from app.models.achievement import Achievement, UserAchievement
 from app.models.streak import StreakDay
 from app.models.usage import UsageRecord
+from app.models.memory import PerformanceEvent, UserTrainingState
 
 __all__ = [
     "Base",
@@ -21,4 +22,6 @@ __all__ = [
     "UserAchievement",
     "StreakDay",
     "UsageRecord",
+    "PerformanceEvent",
+    "UserTrainingState",
 ]

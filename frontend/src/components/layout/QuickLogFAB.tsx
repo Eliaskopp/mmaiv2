@@ -28,20 +28,19 @@ export function QuickLogFAB() {
       <MotionBox
         ref={btnRef}
         position="fixed"
-        bottom="32px"
-        left="50%"
-        transform="translateX(-50%)"
+        bottom="80px"
+        right="20px"
         zIndex="overlay"
         w="56px"
         h="56px"
         borderRadius="full"
         bg="brand.primary"
-        color="white"
+        color="chat.user.text"
         display="flex"
         alignItems="center"
         justifyContent="center"
         cursor="pointer"
-        boxShadow="0 4px 12px rgba(255, 107, 53, 0.4)"
+        boxShadow="0 4px 12px rgba(232, 81, 45, 0.4)"
         onClick={onOpen}
         whileTap={{ scale: 0.95 }}
         aria-label="Quick log"

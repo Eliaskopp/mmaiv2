@@ -6,6 +6,7 @@ class ACWRResponse(BaseModel):
     chronic_load: float
     acwr_ratio: float | None
     risk_zone: str
+    is_calibrating: bool
 
 
 class DailyVolumePoint(BaseModel):

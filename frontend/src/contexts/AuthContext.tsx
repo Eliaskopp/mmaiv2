@@ -17,21 +17,21 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName: string) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(
+    () => !!localStorage.getItem('access_token'),
+  )
 
   // On mount, try to restore session from stored tokens
   useEffect(() => {
     const token = localStorage.getItem('access_token')
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
+    if (!token) return
     authApi
       .getMe()
       .then(setUser)
@@ -70,6 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    const updated = await authApi.getMe()
+    setUser(updated)
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -78,13 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, register, logout, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')

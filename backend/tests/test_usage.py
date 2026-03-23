@@ -3,23 +3,9 @@ from datetime import date
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.services import usage as usage_service
-
-
-# ── DB session helper for unit tests ─────────────────────────────────────────
-
-
-@pytest.fixture
-async def db_session():
-    """Standalone async session for service-level tests."""
-    engine = create_async_engine(settings.database_url, echo=False)
-    session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with session_maker() as session:
-        yield session
-    await engine.dispose()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -98,6 +99,7 @@ function formatDate(dateStr: string | null): string {
 
 export function ProfilePage() {
   const toast = useToast()
+  const [searchParams] = useSearchParams()
   const { data: profile, isLoading, isError, error } = useProfile()
   const createMutation = useCreateProfile()
   const updateMutation = useUpdateProfile()
@@ -105,21 +107,19 @@ export function ProfilePage() {
   const is404 = isError && (error as AxiosError)?.response?.status === 404
   const hasProfile = !!profile
 
-  const { control, handleSubmit, reset, watch } = useForm<ProfileUpdate>({
+  const { control, handleSubmit, reset } = useForm<ProfileUpdate>({
     defaultValues: EMPTY_DEFAULTS,
   })
 
-  const weightClassValue = watch('weight_class') ?? ''
+  const weightClassValue = useWatch({ control, name: 'weight_class' }) ?? ''
   const isCustomWeightClass =
     weightClassValue !== '' && !WEIGHT_CLASS_KNOWN.includes(weightClassValue)
   const [showCustomWeight, setShowCustomWeight] = useState(false)
 
   // Sync showCustomWeight when form resets with an "Other" value
-  useEffect(() => {
-    if (isCustomWeightClass) {
-      setShowCustomWeight(true)
-    }
-  }, [isCustomWeightClass])
+  if (isCustomWeightClass && !showCustomWeight) {
+    setShowCustomWeight(true)
+  }
 
   useEffect(() => {
     if (profile) {
@@ -192,9 +192,25 @@ export function ProfilePage() {
   // Derive the chip value for Weight Class
   const weightChipValue = showCustomWeight || isCustomWeightClass ? '__other__' : weightClassValue
 
+  const isOnboarding = searchParams.get('onboarding') === 'true'
+  const isIncomplete = (profile?.profile_completeness ?? 0) <= 50
+
+  let pageHeading = 'Profile'
+  let pageSubtext: string | null = null
+  if (!hasProfile || (isOnboarding && is404)) {
+    pageHeading = 'Welcome!'
+    pageSubtext = 'Set up your training profile to get started.'
+  } else if (isOnboarding || isIncomplete) {
+    pageHeading = 'Almost there'
+    pageSubtext = 'Fill in a few more details to unlock the coach.'
+  }
+
   return (
     <Container maxW="container.md" py={6}>
-      <Heading size="lg" mb={6}>Profile</Heading>
+      <Heading size="lg" mb={pageSubtext ? 1 : 6}>{pageHeading}</Heading>
+      {pageSubtext && (
+        <Text color="text.muted" mb={6}>{pageSubtext}</Text>
+      )}
 
       {/* Completeness Bar — always visible, 0% when no profile */}
       <Box bg="bg.subtle" p={4} borderRadius="lg" mb={8}>
@@ -210,7 +226,7 @@ export function ProfilePage() {
               borderRadius="full"
               colorScheme="brand"
             />
-            <Text fontFamily="mono" fontSize="sm" fontWeight="semibold">
+            <Text fontFamily="mono" fontSize="sm" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
               {profile?.profile_completeness ?? 0}%
             </Text>
           </Box>
@@ -220,7 +236,7 @@ export function ProfilePage() {
           <>
             <SimpleGrid columns={3} spacing={4} mb={3}>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.current_streak}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
@@ -228,7 +244,7 @@ export function ProfilePage() {
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.longest_streak}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
@@ -236,7 +252,7 @@ export function ProfilePage() {
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold">
+                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {profile.grace_days_remaining}
                 </Text>
                 <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">

@@ -47,6 +47,7 @@ async def test_acwr_no_sessions(client: AsyncClient):
     assert body["chronic_load"] == 0
     assert body["acwr_ratio"] is None
     assert body["risk_zone"] == "insufficient_data"
+    assert body["is_calibrating"] is True
 
 
 @pytest.mark.asyncio
@@ -64,9 +65,10 @@ async def test_acwr_acute_only(client: AsyncClient):
     assert body["acute_load"] == 480.0
     # Chronic includes acute window, so chronic == 480 too
     assert body["chronic_load"] == 480.0
-    # ACWR = 480 / (480/4) = 4.0
-    assert body["acwr_ratio"] == 4.0
-    assert body["risk_zone"] == "very_high"
+    # Only 1 session in 1 day — below calibration thresholds, so ratio is suppressed
+    assert body["acwr_ratio"] is None
+    assert body["risk_zone"] == "insufficient_data"
+    assert body["is_calibrating"] is True
 
 
 @pytest.mark.asyncio
@@ -96,6 +98,8 @@ async def test_acwr_known_values(client: AsyncClient):
     # ACWR = 840 / (1740 / 4) = 840 / 435 ≈ 1.93
     assert body["acwr_ratio"] == 1.93
     assert body["risk_zone"] == "very_high"
+    # 5 sessions spanning 23 days → calibrated
+    assert body["is_calibrating"] is False
 
 
 @pytest.mark.asyncio
@@ -120,6 +124,8 @@ async def test_acwr_optimal_zone(client: AsyncClient):
     # ACWR = 300 / (1200/4) = 300/300 = 1.0
     assert body["acwr_ratio"] == 1.0
     assert body["risk_zone"] == "optimal"
+    # 4 sessions spanning 21 days → calibrated
+    assert body["is_calibrating"] is False
 
 
 @pytest.mark.asyncio
@@ -150,6 +156,90 @@ async def test_acwr_requires_auth(client: AsyncClient):
     """Unauthenticated request is rejected."""
     resp = await client.get("/api/v1/stats/acwr")
     assert resp.status_code in (401, 403)
+
+
+# ── Calibration Edge-Case Tests ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_acwr_calibrating_count_below_threshold(client: AsyncClient):
+    """3 sessions across 20 days → is_calibrating (count < 4)."""
+    data = await _register(client, "cal_count@example.com")
+    headers = _auth(data)
+    today = date.today()
+
+    # 3 sessions on days 0, 10, 20 → span = 20, count = 3
+    for offset in [0, 10, 20]:
+        d = today - timedelta(days=offset)
+        await _create_session(client, headers, session_date=str(d), rpe=6, duration=50)
+
+    resp = await client.get("/api/v1/stats/acwr", headers=headers)
+    body = resp.json()
+    assert body["is_calibrating"] is True
+
+
+@pytest.mark.asyncio
+async def test_acwr_calibrating_span_below_threshold(client: AsyncClient):
+    """5 sessions across 10 days → is_calibrating (span < 14)."""
+    data = await _register(client, "cal_span@example.com")
+    headers = _auth(data)
+    today = date.today()
+
+    # 5 sessions on days 0, 2, 4, 7, 10 → span = 10, count = 5
+    for offset in [0, 2, 4, 7, 10]:
+        d = today - timedelta(days=offset)
+        await _create_session(client, headers, session_date=str(d), rpe=6, duration=50)
+
+    resp = await client.get("/api/v1/stats/acwr", headers=headers)
+    body = resp.json()
+    assert body["is_calibrating"] is True
+
+
+@pytest.mark.asyncio
+async def test_acwr_calibrating_boundary_exact_thresholds(client: AsyncClient):
+    """4 sessions across exactly 14 days → NOT calibrating (both thresholds met exactly)."""
+    data = await _register(client, "cal_boundary@example.com")
+    headers = _auth(data)
+    today = date.today()
+
+    # 4 sessions on days 0, 5, 10, 14 → span = 14, count = 4
+    for offset in [0, 5, 10, 14]:
+        d = today - timedelta(days=offset)
+        await _create_session(client, headers, session_date=str(d), rpe=6, duration=50)
+
+    resp = await client.get("/api/v1/stats/acwr", headers=headers)
+    body = resp.json()
+    assert body["is_calibrating"] is False
+
+
+@pytest.mark.asyncio
+async def test_acwr_calibrating_soft_delete_flips_flag(client: AsyncClient):
+    """Deleting a session drops count below 4 → flips to calibrating."""
+    data = await _register(client, "cal_del@example.com")
+    headers = _auth(data)
+    today = date.today()
+
+    # 4 sessions spanning 14 days → starts calibrated
+    sessions = []
+    for offset in [0, 5, 10, 14]:
+        d = today - timedelta(days=offset)
+        s = await _create_session(client, headers, session_date=str(d), rpe=6, duration=50)
+        sessions.append(s)
+
+    # Verify calibrated first
+    resp = await client.get("/api/v1/stats/acwr", headers=headers)
+    assert resp.json()["is_calibrating"] is False
+
+    # Delete one session → count drops to 3
+    del_resp = await client.delete(
+        f"/api/v1/journal/sessions/{sessions[1]['id']}", headers=headers,
+    )
+    assert del_resp.status_code == 200
+
+    # Now should be calibrating
+    resp = await client.get("/api/v1/stats/acwr", headers=headers)
+    body = resp.json()
+    assert body["is_calibrating"] is True
 
 
 # ── Volume Trends Tests ─────────────────────────────────────────────────────

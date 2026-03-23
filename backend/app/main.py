@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.database import engine
 from app.core.exception_handlers import add_exception_handlers
 from app.core.limiter import limiter
-from app.routes import auth, conversation, health, journal, note, profile, recovery, stats
+from app.routes import auth, conversation, health, journal, memory, note, profile, recovery, stats
 
 
 @asynccontextmanager
@@ -42,5 +42,6 @@ app.include_router(profile.router, prefix="/api/v1")
 app.include_router(journal.router, prefix="/api/v1")
 app.include_router(recovery.router, prefix="/api/v1")
 app.include_router(conversation.router, prefix="/api/v1")
+app.include_router(memory.router, prefix="/api/v1")
 app.include_router(note.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")

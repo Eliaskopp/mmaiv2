@@ -58,11 +58,34 @@ async def get_acwr(
     else:
         ratio = round(acute / chronic_weekly, 2)
 
+    # Calibration check: aggregate MIN/MAX date and COUNT in the chronic window
+    cal_query = select(
+        func.count(TrainingSession.id).label("session_count"),
+        func.min(TrainingSession.session_date).label("earliest"),
+        func.max(TrainingSession.session_date).label("latest"),
+    ).where(
+        TrainingSession.user_id == user_id,
+        TrainingSession.deleted_at.is_(None),
+        TrainingSession.session_date >= chronic_start,
+        TrainingSession.session_date <= today,
+    )
+    cal_row = (await db.execute(cal_query)).one()
+
+    session_count = cal_row.session_count
+    if session_count >= 4 and cal_row.earliest is not None:
+        span_days = (cal_row.latest - cal_row.earliest).days
+        is_calibrating = span_days < 14
+    else:
+        is_calibrating = True
+
+    effective_ratio = None if is_calibrating else ratio
+
     return {
         "acute_load": acute,
         "chronic_load": chronic,
-        "acwr_ratio": ratio,
-        "risk_zone": _risk_zone(ratio),
+        "acwr_ratio": effective_ratio,
+        "risk_zone": _risk_zone(effective_ratio),
+        "is_calibrating": is_calibrating,
     }
 
 

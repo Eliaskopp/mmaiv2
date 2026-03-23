@@ -2,7 +2,7 @@
 
 ## What This Is
 
-AI martial arts coaching platform V2 — a "Living Portfolio" app targeting Melbourne SportsTech roles. Served at **chat.mmai.coach**, fully isolated from the live monolith at **www.mmai.coach**.
+AI martial arts coaching platform V2 — a "Living Portfolio" app targeting Melbourne SportsTech roles. Production at **www.mmai.coach**, staging at **chat.mmai.coach**. V1 monolith is decommissioned (PM2 process `mmai` stopped).
 
 ## Stack
 
@@ -17,7 +17,7 @@ AI martial arts coaching platform V2 — a "Living Portfolio" app targeting Melb
 
 ## Ports
 
-- Backend: `8000`
+- Backend: `8001`
 - Frontend dev server: `5173`
 
 ## Database Rules
@@ -67,15 +67,12 @@ Do NOT build these — they belong to V1 only:
 - Admin queue
 - Knowledge base
 
-## Zero Downtime Rule
+## Infrastructure Rules
 
-**CRITICAL**: NEVER modify:
-- `~/mmai-monolith/` (any file)
-- nginx configs for `www.mmai.coach`
-- PM2 process `mmai`
-- Database `mmai` (the V1 database)
-
-V2 is fully isolated. If you need to touch shared infrastructure (nginx, PostgreSQL), document what's needed and ask first.
+- **www.mmai.coach** serves V2 (nginx → `frontend/dist` + proxy to `:8001`)
+- **chat.mmai.coach** is the staging mirror (same V2 codebase)
+- V1 monolith (`~/mmai-monolith/`, PM2 process `mmai`, database `mmai`) is decommissioned — do not resurrect it
+- Do not modify nginx configs without explicit user approval
 
 ## Strict Override Rules
 
@@ -157,3 +154,16 @@ npm run lint         # ESLint check
 └── docs/
     └── adr/            # Architecture Decision Records
 ```
+
+## Agent Management Rules
+
+1. **Read ./STATE.md first** — At the start of every session, read the local `STATE.md` file before proposing any work. This is the source of truth for architecture, metrics, and milestones.
+2. **Small Bets Only** — Never refactor multiple pages/modules in one pass. One component, one endpoint, or one fix at a time. Commit after each successful small bet.
+3. **Zero V1 Contact** — V1 is decommissioned. Never touch `~/mmai-monolith/`, PM2 process `mmai`, or database `mmai`. Do not modify nginx configs without explicit user approval.
+4. **Strict Typing** — Backend: all request/response shapes use Pydantic models, no raw dicts. Frontend: Chakra UI semantic tokens for theming, TypeScript strict mode.
+5. **Commit Cadence** — Git commit after every successful small bet (passing test, working component, fixed bug). Don't batch unrelated changes.
+6. **No Speculative Work** — Don't build features, abstractions, or "improvements" not explicitly requested. Discuss scope before coding.
+
+# STATE.md Write Protocol
+
+Never update STATE.md during intermediate steps, PRD drafting, or test writing. STATE.md is only to be updated upon the completion and successful testing of a full Vertical Slice (Issue) or Milestone.

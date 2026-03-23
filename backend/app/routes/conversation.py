@@ -16,8 +16,10 @@ from app.schemas.conversation import (
     MessageListResponse,
     MessageResponse as MsgResponse,
 )
+from app.core.database import async_session
 from app.services import conversation as conversation_service
 from app.services.extraction import extract_and_save_notes
+from app.services.memory_extraction import extract_and_save_memory
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
@@ -104,6 +106,14 @@ async def send_message(
         assistant_content=assistant_msg.content,
         user_id=current_user.id,
         conversation_id=conversation_id,
+    )
+    background_tasks.add_task(
+        extract_and_save_memory,
+        db_session_maker=async_session,
+        user_id=current_user.id,
+        conversation_id=conversation_id,
+        user_content=body.content,
+        assistant_content=assistant_msg.content,
     )
     return [
         MsgResponse.model_validate(user_msg),

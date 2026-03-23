@@ -18,15 +18,15 @@ interface SessionTypeConfig {
 }
 
 export const SESSION_TYPE_MAP: Record<string, SessionTypeConfig> = {
-  muay_thai:     { label: 'Muay Thai',     color: '#EF4444', icon: Flame },
-  bjj_gi:        { label: 'BJJ Gi',        color: '#3B82F6', icon: Shield },
-  bjj_nogi:      { label: 'BJJ No-Gi',     color: '#8B5CF6', icon: Shield },
-  boxing:        { label: 'Boxing',         color: '#F59E0B', icon: Zap },
-  mma:           { label: 'MMA',            color: '#FF6B35', icon: Swords },
-  wrestling:     { label: 'Wrestling',      color: '#10B981', icon: Grip },
-  conditioning:  { label: 'Conditioning',   color: '#06B6D4', icon: Activity },
-  strength:      { label: 'Strength',       color: '#EC4899', icon: Dumbbell },
-  other:         { label: 'Other',          color: '#6B7280', icon: MoreHorizontal },
+  muay_thai:     { label: 'Muay Thai',     color: 'red.500', icon: Flame },
+  bjj_gi:        { label: 'BJJ Gi',        color: 'blue.400', icon: Shield },
+  bjj_nogi:      { label: 'BJJ No-Gi',     color: 'purple.400', icon: Shield },
+  boxing:        { label: 'Boxing',         color: 'yellow.400', icon: Zap },
+  mma:           { label: 'MMA',            color: 'brand.primary', icon: Swords },
+  wrestling:     { label: 'Wrestling',      color: 'green.400', icon: Grip },
+  conditioning:  { label: 'Conditioning',   color: 'cyan.400', icon: Activity },
+  strength:      { label: 'Strength',       color: 'pink.400', icon: Dumbbell },
+  other:         { label: 'Other',          color: 'gray.500', icon: MoreHorizontal },
 }
 
 export const SESSION_TYPE_OPTIONS = Object.entries(SESSION_TYPE_MAP).map(([value, cfg]) => ({
@@ -72,10 +72,10 @@ export function groupSessionsByDate(sessions: SessionResponse[]): DateGroup[] {
 }
 
 export function getRPEColor(value: number): string {
-  if (value <= 3) return '#22C55E'
-  if (value <= 6) return '#EAB308'
-  if (value <= 8) return '#F97316'
-  return '#EF4444'
+  if (value <= 3) return 'green.400'
+  if (value <= 6) return 'yellow.400'
+  if (value <= 8) return 'orange.400'
+  return 'red.500'
 }
 
 export function getRPELabel(value: number): string {

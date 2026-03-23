@@ -6,6 +6,7 @@ const ZONE_CONFIG: Record<string, { label: string; color: string }> = {
   very_high: { label: 'DANGER', color: 'red.500' },
   low: { label: 'LOW', color: 'accent.blue' },
   insufficient_data: { label: 'NO DATA', color: 'text.muted' },
+  calibrating: { label: 'CALIBRATING', color: 'text.muted' },
 }
 
 interface ExertionStatusProps {
@@ -13,10 +14,12 @@ interface ExertionStatusProps {
   acwrRatio: number | null
   acuteLoad: number
   chronicLoad: number
+  isCalibrating?: boolean
 }
 
-export function ExertionStatus({ riskZone, acwrRatio, acuteLoad, chronicLoad }: ExertionStatusProps) {
-  const zone = ZONE_CONFIG[riskZone] ?? ZONE_CONFIG.insufficient_data
+export function ExertionStatus({ riskZone, acwrRatio, acuteLoad, chronicLoad, isCalibrating }: ExertionStatusProps) {
+  const effectiveZone = isCalibrating ? 'calibrating' : riskZone
+  const zone = ZONE_CONFIG[effectiveZone] ?? ZONE_CONFIG.insufficient_data
 
   return (
     <Box bg="bg.subtle" p={5} borderRadius="lg">

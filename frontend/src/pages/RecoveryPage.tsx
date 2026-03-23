@@ -172,9 +172,11 @@ export function RecoveryPage() {
         <HStack justify="center" spacing={3}>
           <IconButton
             aria-label="Previous day"
-            icon={<ChevronLeft size={20} />}
+            icon={<ChevronLeft size={22} />}
             variant="ghost"
             size="sm"
+            minH="44px"
+            minW="44px"
             onClick={() => setSelectedDate((d) => shiftDate(d, -1))}
           />
           <Text fontWeight="semibold" color="text.primary" minW="160px" textAlign="center">
@@ -182,9 +184,11 @@ export function RecoveryPage() {
           </Text>
           <IconButton
             aria-label="Next day"
-            icon={<ChevronRight size={20} />}
+            icon={<ChevronRight size={22} />}
             variant="ghost"
             size="sm"
+            minH="44px"
+            minW="44px"
             isDisabled={selectedDate === todayISO()}
             onClick={() => setSelectedDate((d) => shiftDate(d, 1))}
           />
@@ -219,6 +223,8 @@ export function RecoveryPage() {
                       step={1}
                       value={field.value}
                       onChange={field.onChange}
+                      aria-label="Sleep Quality"
+                      aria-valuetext={SLEEP_LABELS[field.value]}
                     >
                       <SliderTrack>
                         <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />

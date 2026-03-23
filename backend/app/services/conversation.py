@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.exceptions import EntityNotFoundError, QuotaExceededError
 from app.models.conversation import Conversation, Message, MessageRole
+from app.models.journal import TrainingSession
 from app.prompts.coach import COACH_SYSTEM_PROMPT
 from app.services.grok import GrokClient
 from app.services import usage as usage_service
@@ -19,6 +20,7 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
     """
     from app.services import profile as profile_service
     from app.services import recovery as recovery_service
+    from app.services import memory as memory_service
 
     context_lines: list[str] = []
 
@@ -58,6 +60,89 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
         if recovery_parts:
             context_lines.append("Today's Recovery: " + ". ".join(recovery_parts) + ".")
     except EntityNotFoundError:
+        pass
+
+    # Fetch last 7 days of training sessions
+    try:
+        week_ago = date.today() - timedelta(days=6)
+        result = await db.execute(
+            select(TrainingSession)
+            .where(
+                TrainingSession.user_id == user_id,
+                TrainingSession.deleted_at.is_(None),
+                TrainingSession.session_date >= week_ago,
+                TrainingSession.session_date <= date.today(),
+            )
+            .order_by(TrainingSession.session_date.desc())
+            .limit(10)
+        )
+        recent_sessions = result.scalars().all()
+        if recent_sessions:
+            session_lines: list[str] = []
+            for s in recent_sessions:
+                parts = [str(s.session_date), s.session_type.value]
+                if s.duration_minutes:
+                    parts.append(f"{s.duration_minutes}min")
+                if s.intensity_rpe:
+                    parts.append(f"RPE {s.intensity_rpe}")
+                if s.title:
+                    parts.append(s.title)
+                session_lines.append(" | ".join(parts))
+            context_lines.append("Recent Sessions (last 7 days):\n" + "\n".join(session_lines))
+    except Exception:
+        pass
+
+    # Fetch ACWR
+    try:
+        from app.services import stats as stats_service
+        acwr_data = await stats_service.get_acwr(db, user_id)
+        if acwr_data["acwr_ratio"] is not None:
+            cal_note = " (calibrating — less than 2 weeks of data)" if acwr_data.get("is_calibrating") else ""
+            context_lines.append(
+                f"ACWR: {acwr_data['acwr_ratio']} ({acwr_data['risk_zone']} risk zone){cal_note}"
+            )
+    except Exception:
+        pass
+
+    # Fetch memory telemetry — recent performance events + training state
+    try:
+        telemetry = await memory_service.get_recent_telemetry(db, user_id)
+        telemetry_events = telemetry.get("events", [])
+        telemetry_state = telemetry.get("training_state")
+
+        if telemetry_events:
+            event_lines: list[str] = []
+            for e in telemetry_events[:7]:
+                parts = [
+                    str(e.event_date),
+                    e.event_type.value.replace("_", " ").title(),
+                ]
+                if e.discipline:
+                    parts.append(e.discipline.value.replace("_", " ").title())
+                if e.rpe_score is not None:
+                    parts.append(f"RPE {e.rpe_score}")
+                if e.failure_domain:
+                    parts.append(e.failure_domain.value.title())
+                if e.cns_status:
+                    parts.append(f"CNS: {e.cns_status.value.title()}")
+                if e.outcome:
+                    parts.append(e.outcome.value.title())
+                event_lines.append(" | ".join(parts))
+            context_lines.append(
+                "Performance Memory (last 14 days):\n" + "\n".join(event_lines)
+            )
+
+        if telemetry_state:
+            state_parts: list[str] = []
+            if telemetry_state.current_focus:
+                state_parts.append(f"Focus: {', '.join(telemetry_state.current_focus)}")
+            if telemetry_state.active_injuries:
+                state_parts.append(f"Injuries: {', '.join(telemetry_state.active_injuries)}")
+            if telemetry_state.short_term_goals:
+                state_parts.append(f"Goals: {', '.join(telemetry_state.short_term_goals)}")
+            if state_parts:
+                context_lines.append("Training State: " + ". ".join(state_parts) + ".")
+    except Exception:
         pass
 
     athlete_context = "\n".join(context_lines) if context_lines else "No profile or recovery data available."

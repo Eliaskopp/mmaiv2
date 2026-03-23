@@ -31,6 +31,8 @@ export function useUpsertRecoveryLog() {
     onSuccess: (data) => {
       queryClient.setQueryData([...RECOVERY_LOGS_KEY, data.logged_for], data)
       queryClient.invalidateQueries({ queryKey: RECOVERY_LOGS_KEY })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['stats'] })
     },
   })
 }
