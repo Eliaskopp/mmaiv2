@@ -65,9 +65,9 @@ async def test_acwr_acute_only(client: AsyncClient):
     assert body["acute_load"] == 480.0
     # Chronic includes acute window, so chronic == 480 too
     assert body["chronic_load"] == 480.0
-    # ACWR = 480 / (480/4) = 4.0
-    assert body["acwr_ratio"] == 4.0
-    assert body["risk_zone"] == "very_high"
+    # Only 1 session in 1 day — below calibration thresholds, so ratio is suppressed
+    assert body["acwr_ratio"] is None
+    assert body["risk_zone"] == "insufficient_data"
     assert body["is_calibrating"] is True
 
 
