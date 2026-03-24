@@ -34,8 +34,8 @@ export function MessageBubble({ message, onCitationClick, onRetry }: MessageBubb
         )}
 
         <Box
-          bg={isUser ? 'chat.user.bg' : 'bg.subtle'}
-          color={isUser ? 'chat.user.text' : 'text.primary'}
+          bg={isUser ? 'chat.user.bg' : 'chat.ai.bg'}
+          color={isUser ? 'chat.user.text' : 'chat.ai.text'}
           px={4}
           py={3}
           borderRadius="2xl"

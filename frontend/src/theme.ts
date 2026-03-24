@@ -25,6 +25,8 @@ const theme = extendTheme({
 
       'chat.user.bg': { default: '#E8512D', _dark: '#E8512D' },
       'chat.user.text': { default: '#0A1628', _dark: '#0A1628' },
+      'chat.ai.bg': { default: '#fefae4', _dark: '#fefae4' },
+      'chat.ai.text': { default: '#0A1628', _dark: '#0A1628' },
     },
   },
 
