@@ -74,7 +74,7 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
           </Text>
           <Flex ml="auto" align="center" gap={3} flexShrink={0}>
             {session.duration_minutes && (
-              <Text fontSize="xs" color="text.secondary">
+              <Text fontSize="xs" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                 {session.duration_minutes} min
               </Text>
             )}
@@ -89,6 +89,7 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
                 h="22px"
                 fontSize="xs"
                 fontWeight="bold"
+                sx={{ fontVariantNumeric: 'tabular-nums' }}
               >
                 {session.intensity_rpe}
               </Flex>

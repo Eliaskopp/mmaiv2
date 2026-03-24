@@ -25,7 +25,7 @@ export function ExertionStatus({ riskZone, acwrRatio, acuteLoad, chronicLoad, is
     <Box bg="bg.subtle" p={5} borderRadius="lg">
       <Flex align="center" justify="space-between" gap={4}>
         <Box>
-          <Text fontSize="xs" fontWeight="medium" color="text.muted" textTransform="uppercase" letterSpacing="wider" mb={1}>
+          <Text fontSize="xs" fontWeight="medium" color="text.muted" textTransform="uppercase" letterSpacing="wide" mb={1}>
             Exertion Status
           </Text>
           <Text fontSize="2xl" fontWeight="bold" color={zone.color} lineHeight="1">
@@ -43,7 +43,7 @@ export function ExertionStatus({ riskZone, acwrRatio, acuteLoad, chronicLoad, is
           >
             {acwrRatio != null ? acwrRatio.toFixed(2) : '--'}
           </Text>
-          <Text fontSize="xs" color="text.muted" mt={1}>
+          <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide" mt={1}>
             ACWR Ratio
           </Text>
         </Box>
@@ -51,14 +51,14 @@ export function ExertionStatus({ riskZone, acwrRatio, acuteLoad, chronicLoad, is
 
       <Flex mt={3} gap={6}>
         <Box>
-          <Text fontSize="xs" color="text.muted">Acute (7d)</Text>
-          <Text fontSize="sm" fontWeight="semibold" color="text.secondary" fontFamily="mono" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">Acute (7d)</Text>
+          <Text fontSize="sm" fontWeight="bold" color="text.secondary" fontFamily="mono" sx={{ fontVariantNumeric: 'tabular-nums' }}>
             {acuteLoad.toFixed(0)}
           </Text>
         </Box>
         <Box>
-          <Text fontSize="xs" color="text.muted">Chronic (28d)</Text>
-          <Text fontSize="sm" fontWeight="semibold" color="text.secondary" fontFamily="mono" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">Chronic (28d)</Text>
+          <Text fontSize="sm" fontWeight="bold" color="text.secondary" fontFamily="mono" sx={{ fontVariantNumeric: 'tabular-nums' }}>
             {chronicLoad.toFixed(0)}
           </Text>
         </Box>

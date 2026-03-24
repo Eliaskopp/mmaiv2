@@ -231,7 +231,7 @@ export function RecoveryPage() {
                       </SliderTrack>
                       <SliderThumb boxSize={6} />
                     </Slider>
-                    <Text fontSize="sm" color="text.secondary" mt={1} textAlign="center">
+                    <Text fontSize="sm" color="text.secondary" mt={1} textAlign="center" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                       {field.value} — {SLEEP_LABELS[field.value]}
                     </Text>
                   </Box>
