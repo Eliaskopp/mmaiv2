@@ -15,11 +15,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import {
-  useConversations,
-  useMessages,
-  useSendMessage,
-} from '../hooks/use-conversations'
+import { useConversations, useMessages, useSendMessage } from '../hooks/use-conversations'
 import { useScrollAnchor } from '../hooks/use-scroll-anchor'
 import { createConversation } from '../services/conversations'
 import { MessageList } from '../components/chat/MessageList'
@@ -74,7 +70,7 @@ export function ChatPage() {
         const message = axiosErr?.response?.data?.detail || 'Failed to start conversation'
         toast({ title: message, status: 'error', duration: 4000 })
       })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId])
 
   // Fetch messages for the current conversation
@@ -186,11 +182,7 @@ export function ChatPage() {
         onClose={citationDrawer.onClose}
       />
 
-      <Drawer
-        isOpen={sessionDrawer.isOpen}
-        onClose={sessionDrawer.onClose}
-        placement="bottom"
-      >
+      <Drawer isOpen={sessionDrawer.isOpen} onClose={sessionDrawer.onClose} placement="bottom">
         <DrawerOverlay />
         <DrawerContent bg="bg.muted" borderTopRadius="xl" maxH="50vh">
           <DrawerCloseButton color="text.secondary" />

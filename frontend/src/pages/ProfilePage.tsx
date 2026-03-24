@@ -41,9 +41,9 @@ const WEIGHT_CLASS_OPTIONS = [
   { value: '__other__', label: 'Other' },
 ]
 
-const WEIGHT_CLASS_KNOWN = WEIGHT_CLASS_OPTIONS
-  .filter((o) => o.value !== '__other__')
-  .map((o) => o.value)
+const WEIGHT_CLASS_KNOWN = WEIGHT_CLASS_OPTIONS.filter((o) => o.value !== '__other__').map(
+  (o) => o.value,
+)
 
 const WEIGHT_UNIT_OPTIONS = [
   { value: 'kg', label: 'kg' },
@@ -207,15 +207,25 @@ export function ProfilePage() {
 
   return (
     <Container maxW="container.md" py={6}>
-      <Heading size="lg" mb={pageSubtext ? 1 : 6}>{pageHeading}</Heading>
+      <Heading size="lg" mb={pageSubtext ? 1 : 6}>
+        {pageHeading}
+      </Heading>
       {pageSubtext && (
-        <Text color="text.muted" mb={6}>{pageSubtext}</Text>
+        <Text color="text.muted" mb={6}>
+          {pageSubtext}
+        </Text>
       )}
 
       {/* Completeness Bar — always visible, 0% when no profile */}
       <Box bg="bg.subtle" p={4} borderRadius="lg" mb={8}>
         <Box mb={profile ? 3 : 0}>
-          <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide" mb={1}>
+          <Text
+            fontSize="xs"
+            color="text.muted"
+            textTransform="uppercase"
+            letterSpacing="wide"
+            mb={1}
+          >
             Profile Completeness
           </Text>
           <Box display="flex" alignItems="center" gap={3}>
@@ -226,7 +236,12 @@ export function ProfilePage() {
               borderRadius="full"
               colorScheme="brand"
             />
-            <Text fontFamily="mono" fontSize="sm" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+            <Text
+              fontFamily="mono"
+              fontSize="sm"
+              fontWeight="semibold"
+              sx={{ fontVariantNumeric: 'tabular-nums' }}
+            >
               {profile?.profile_completeness ?? 0}%
             </Text>
           </Box>
@@ -236,26 +251,56 @@ export function ProfilePage() {
           <>
             <SimpleGrid columns={3} spacing={4} mb={3}>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                <Text
+                  fontFamily="mono"
+                  fontSize="2xl"
+                  fontWeight="semibold"
+                  sx={{ fontVariantNumeric: 'tabular-nums' }}
+                >
                   {profile.current_streak}
                 </Text>
-                <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
+                <Text
+                  fontSize="xs"
+                  color="text.muted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                >
                   Current Streak
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                <Text
+                  fontFamily="mono"
+                  fontSize="2xl"
+                  fontWeight="semibold"
+                  sx={{ fontVariantNumeric: 'tabular-nums' }}
+                >
                   {profile.longest_streak}
                 </Text>
-                <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
+                <Text
+                  fontSize="xs"
+                  color="text.muted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                >
                   Longest Streak
                 </Text>
               </Box>
               <Box>
-                <Text fontFamily="mono" fontSize="2xl" fontWeight="semibold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                <Text
+                  fontFamily="mono"
+                  fontSize="2xl"
+                  fontWeight="semibold"
+                  sx={{ fontVariantNumeric: 'tabular-nums' }}
+                >
                   {profile.grace_days_remaining}
                 </Text>
-                <Text fontSize="xs" color="text.muted" textTransform="uppercase" letterSpacing="wide">
+                <Text
+                  fontSize="xs"
+                  color="text.muted"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                >
                   Grace Days
                 </Text>
               </Box>
@@ -271,7 +316,6 @@ export function ProfilePage() {
       {/* Form */}
       <Box as="form" onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={8} align="stretch">
-
           {/* ── Experience ── */}
           <Box bg="bg.subtle" p={5} borderRadius="lg">
             <Text fontSize="md" fontWeight="semibold" color="text.primary" mb={4}>
@@ -512,16 +556,9 @@ export function ProfilePage() {
           </Box>
 
           {/* Save */}
-          <Button
-            type="submit"
-            colorScheme="brand"
-            width="full"
-            isLoading={isPending}
-            size="lg"
-          >
+          <Button type="submit" colorScheme="brand" width="full" isLoading={isPending} size="lg">
             {hasProfile ? 'Save Changes' : 'Create Profile'}
           </Button>
-
         </VStack>
       </Box>
     </Container>

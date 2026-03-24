@@ -32,9 +32,7 @@ export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
           color={entry.dataKey === 'total_duration' ? 'accent.blue' : 'brand.primary'}
           sx={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {entry.dataKey === 'total_duration'
-            ? `${entry.value} min`
-            : `Load: ${entry.value}`}
+          {entry.dataKey === 'total_duration' ? `${entry.value} min` : `Load: ${entry.value}`}
         </Text>
       ))}
     </Box>

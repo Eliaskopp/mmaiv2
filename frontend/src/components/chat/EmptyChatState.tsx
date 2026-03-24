@@ -9,7 +9,7 @@ const SUGGESTED_PROMPTS = [
   // Coaching triggers
   "I'm nervous about my first sparring session",
   'Break down what makes a good rear cross',
-  'Help me debrief today\'s training session',
+  "Help me debrief today's training session",
 ]
 
 interface EmptyChatStateProps {

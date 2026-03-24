@@ -23,9 +23,7 @@ export function HealthCheck() {
 
   return (
     <HStack spacing={3}>
-      <Badge colorScheme={data.status === 'healthy' ? 'green' : 'red'}>
-        {data.status}
-      </Badge>
+      <Badge colorScheme={data.status === 'healthy' ? 'green' : 'red'}>{data.status}</Badge>
       <Badge colorScheme="blue">v{data.version}</Badge>
       <Badge colorScheme={data.database === 'connected' ? 'green' : 'red'}>
         DB: {data.database}

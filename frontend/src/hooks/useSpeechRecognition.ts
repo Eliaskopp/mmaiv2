@@ -23,7 +23,9 @@ type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance
 
 function getSpeechRecognition(): SpeechRecognitionConstructor | null {
   const w = window as unknown as Record<string, unknown>
-  return (w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null) as SpeechRecognitionConstructor | null
+  return (w.SpeechRecognition ??
+    w.webkitSpeechRecognition ??
+    null) as SpeechRecognitionConstructor | null
 }
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -46,8 +48,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   'not-allowed': 'Microphone access denied. Please allow microphone permissions.',
   'no-speech': 'No speech detected. Try again.',
   'audio-capture': 'No microphone found. Check your device.',
-  'network': 'Network error. Check your connection.',
-  'aborted': 'Speech recognition was aborted.',
+  network: 'Network error. Check your connection.',
+  aborted: 'Speech recognition was aborted.',
   'service-not-allowed': 'Speech recognition service not allowed.',
 }
 

@@ -1,14 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import {
-  Flame,
-  Shield,
-  Zap,
-  Swords,
-  Grip,
-  Activity,
-  Dumbbell,
-  MoreHorizontal,
-} from 'lucide-react'
+import { Flame, Shield, Zap, Swords, Grip, Activity, Dumbbell, MoreHorizontal } from 'lucide-react'
 import type { SessionResponse } from '../../types'
 
 interface SessionTypeConfig {
@@ -18,15 +9,15 @@ interface SessionTypeConfig {
 }
 
 export const SESSION_TYPE_MAP: Record<string, SessionTypeConfig> = {
-  muay_thai:     { label: 'Muay Thai',     color: 'red.500', icon: Flame },
-  bjj_gi:        { label: 'BJJ Gi',        color: 'blue.400', icon: Shield },
-  bjj_nogi:      { label: 'BJJ No-Gi',     color: 'purple.400', icon: Shield },
-  boxing:        { label: 'Boxing',         color: 'yellow.400', icon: Zap },
-  mma:           { label: 'MMA',            color: 'brand.primary', icon: Swords },
-  wrestling:     { label: 'Wrestling',      color: 'green.400', icon: Grip },
-  conditioning:  { label: 'Conditioning',   color: 'cyan.400', icon: Activity },
-  strength:      { label: 'Strength',       color: 'pink.400', icon: Dumbbell },
-  other:         { label: 'Other',          color: 'gray.500', icon: MoreHorizontal },
+  muay_thai: { label: 'Muay Thai', color: 'red.500', icon: Flame },
+  bjj_gi: { label: 'BJJ Gi', color: 'blue.400', icon: Shield },
+  bjj_nogi: { label: 'BJJ No-Gi', color: 'purple.400', icon: Shield },
+  boxing: { label: 'Boxing', color: 'yellow.400', icon: Zap },
+  mma: { label: 'MMA', color: 'brand.primary', icon: Swords },
+  wrestling: { label: 'Wrestling', color: 'green.400', icon: Grip },
+  conditioning: { label: 'Conditioning', color: 'cyan.400', icon: Activity },
+  strength: { label: 'Strength', color: 'pink.400', icon: Dumbbell },
+  other: { label: 'Other', color: 'gray.500', icon: MoreHorizontal },
 }
 
 export const SESSION_TYPE_OPTIONS = Object.entries(SESSION_TYPE_MAP).map(([value, cfg]) => ({

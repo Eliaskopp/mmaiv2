@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '../types/auth'
 import * as authApi from '../services/auth'
@@ -24,9 +17,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(
-    () => !!localStorage.getItem('access_token'),
-  )
+  const [isLoading, setIsLoading] = useState(() => !!localStorage.getItem('access_token'))
 
   // On mount, try to restore session from stored tokens
   useEffect(() => {
@@ -49,19 +40,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user)
   }, [])
 
-  const register = useCallback(
-    async (email: string, password: string, displayName: string) => {
-      const data = await authApi.register({
-        email,
-        password,
-        display_name: displayName,
-      })
-      localStorage.setItem('access_token', data.access_token)
-      localStorage.setItem('refresh_token', data.refresh_token)
-      setUser(data.user)
-    },
-    [],
-  )
+  const register = useCallback(async (email: string, password: string, displayName: string) => {
+    const data = await authApi.register({
+      email,
+      password,
+      display_name: displayName,
+    })
+    localStorage.setItem('access_token', data.access_token)
+    localStorage.setItem('refresh_token', data.refresh_token)
+    setUser(data.user)
+  }, [])
 
   const logout = useCallback(() => {
     authApi.logout().catch(() => {})

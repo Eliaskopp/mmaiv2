@@ -71,12 +71,7 @@ export function JournalList({
           </Text>
           <VStack spacing={2} align="stretch">
             {group.sessions.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
+              <SessionCard key={session.id} session={session} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </VStack>
         </Box>

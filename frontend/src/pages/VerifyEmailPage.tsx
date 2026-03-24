@@ -61,9 +61,8 @@ export function VerifyEmailPage() {
         await refreshUser()
         navigate('/chat', { replace: true })
       } catch (err: unknown) {
-        const detail =
-          (err as { response?: { data?: { detail?: string } } })?.response?.data
-            ?.detail
+        const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data
+          ?.detail
         toast({
           title: typeof detail === 'string' ? detail : 'Verification failed',
           status: 'error',
@@ -85,8 +84,7 @@ export function VerifyEmailPage() {
       setCooldown(COOLDOWN_SECONDS)
       setCode('')
     } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       toast({
         title: typeof detail === 'string' ? detail : 'Failed to resend code',
         status: 'error',

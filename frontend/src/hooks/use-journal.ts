@@ -22,9 +22,7 @@ export function useJournalSessions(filters?: SessionFilters) {
   })
 }
 
-export function useInfiniteJournalSessions(
-  filters?: Omit<SessionFilters, 'offset' | 'limit'>,
-) {
+export function useInfiniteJournalSessions(filters?: Omit<SessionFilters, 'offset' | 'limit'>) {
   return useInfiniteQuery({
     queryKey: [...SESSIONS_KEY, 'infinite', filters] as const,
     queryFn: ({ pageParam = 0 }) =>
@@ -84,9 +82,7 @@ export function useUpdateJournalSession() {
             pages: old.pages.map((page) => ({
               ...page,
               items: page.items.map((item) =>
-                item.id === id
-                  ? { ...item, ...body } as SessionResponse
-                  : item,
+                item.id === id ? ({ ...item, ...body } as SessionResponse) : item,
               ),
             })),
           }

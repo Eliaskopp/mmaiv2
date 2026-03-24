@@ -23,7 +23,9 @@ function formatDateTick(dateStr: string): string {
 
 export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
   const [accentBlue, brandPrimary, textMuted] = useToken('colors', [
-    'accent.blue', 'brand.primary', 'text.muted',
+    'accent.blue',
+    'brand.primary',
+    'text.muted',
   ])
 
   const TICK_STYLE = {
@@ -38,11 +40,15 @@ export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
       <Flex gap={4} mb={3} align="center">
         <Flex align="center" gap={1.5}>
           <Box w="10px" h="10px" borderRadius="sm" bg="accent.blue" opacity={0.6} />
-          <Text fontSize="xs" color="text.secondary">Duration (min)</Text>
+          <Text fontSize="xs" color="text.secondary">
+            Duration (min)
+          </Text>
         </Flex>
         <Flex align="center" gap={1.5}>
           <Box w="10px" h="3px" borderRadius="full" bg="brand.primary" />
-          <Text fontSize="xs" color="text.secondary">Exertion Load</Text>
+          <Text fontSize="xs" color="text.secondary">
+            Exertion Load
+          </Text>
         </Flex>
       </Flex>
 
@@ -80,10 +86,7 @@ export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
             axisLine={false}
           />
 
-          <Tooltip
-            content={<ChartTooltip />}
-            cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-          />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
 
           <Bar
             dataKey="total_duration"

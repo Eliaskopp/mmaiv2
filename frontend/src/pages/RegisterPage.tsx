@@ -34,8 +34,7 @@ export function RegisterPage() {
       await register(email, password, displayName)
       navigate('/verify-email', { replace: true })
     } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       const message = typeof detail === 'string' ? detail : 'Registration failed'
       toast({ title: message, status: 'error', duration: 4000 })
     } finally {
@@ -77,12 +76,7 @@ export function RegisterPage() {
                 autoComplete="new-password"
               />
             </FormControl>
-            <Button
-              type="submit"
-              colorScheme="brand"
-              width="full"
-              isLoading={isSubmitting}
-            >
+            <Button type="submit" colorScheme="brand" width="full" isLoading={isSubmitting}>
               Register
             </Button>
           </VStack>

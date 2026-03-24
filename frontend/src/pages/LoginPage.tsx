@@ -69,12 +69,7 @@ export function LoginPage() {
                 autoComplete="current-password"
               />
             </FormControl>
-            <Button
-              type="submit"
-              colorScheme="brand"
-              width="full"
-              isLoading={isSubmitting}
-            >
+            <Button type="submit" colorScheme="brand" width="full" isLoading={isSubmitting}>
               Sign In
             </Button>
           </VStack>
@@ -84,7 +79,6 @@ export function LoginPage() {
           <Text as={Link} to="/register" color="brand.primary" fontWeight="medium">
             Register
           </Text>
-
         </Text>
       </VStack>
     </Container>

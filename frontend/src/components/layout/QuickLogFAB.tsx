@@ -49,12 +49,7 @@ export function QuickLogFAB() {
         <Plus size={26} />
       </MotionBox>
 
-      <Drawer
-        isOpen={isOpen}
-        onClose={onClose}
-        placement="bottom"
-        finalFocusRef={btnRef}
-      >
+      <Drawer isOpen={isOpen} onClose={onClose} placement="bottom" finalFocusRef={btnRef}>
         <DrawerOverlay />
         <DrawerContent bg="bg.muted" borderTopRadius="xl" maxH="50vh">
           <DrawerCloseButton color="text.secondary" />

@@ -40,14 +40,17 @@ function arcPath(startRatio: number, endRatio: number): string {
 
 export function RiskGauge({ ratio, size = 200, isCalibrating }: RiskGaugeProps) {
   const [accentBlue, green400, orange400, red500] = useToken('colors', [
-    'accent.blue', 'green.400', 'orange.400', 'red.500',
+    'accent.blue',
+    'green.400',
+    'orange.400',
+    'red.500',
   ])
 
   const ZONES = [
-    { from: 0, to: 0.8, color: accentBlue },   // low
-    { from: 0.8, to: 1.3, color: green400 },    // optimal
-    { from: 1.3, to: 1.5, color: orange400 },   // high
-    { from: 1.5, to: 2.0, color: red500 },      // very high
+    { from: 0, to: 0.8, color: accentBlue }, // low
+    { from: 0.8, to: 1.3, color: green400 }, // optimal
+    { from: 1.3, to: 1.5, color: orange400 }, // high
+    { from: 1.5, to: 2.0, color: red500 }, // very high
   ]
 
   const effectiveRatio = ratio ?? 0
@@ -70,7 +73,13 @@ export function RiskGauge({ ratio, size = 200, isCalibrating }: RiskGaugeProps) 
         width="100%"
         style={{ maxWidth: size }}
         role="img"
-        aria-label={isCalibrating ? 'ACWR risk gauge: calibrating' : ratio != null ? `ACWR risk gauge: ${ratio.toFixed(2)}` : 'ACWR risk gauge: no data'}
+        aria-label={
+          isCalibrating
+            ? 'ACWR risk gauge: calibrating'
+            : ratio != null
+              ? `ACWR risk gauge: ${ratio.toFixed(2)}`
+              : 'ACWR risk gauge: no data'
+        }
       >
         {/* Zone arcs */}
         {ZONES.map((zone) => (
@@ -127,11 +136,26 @@ export function RiskGauge({ ratio, size = 200, isCalibrating }: RiskGaugeProps) 
       </svg>
 
       {/* Zone labels below the gauge */}
-      <Box display="flex" justifyContent="space-between" width="100%" maxW={`${size}px`} px={2} mt={-1}>
-        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>0</Text>
-        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>0.8</Text>
-        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>1.3</Text>
-        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>2.0</Text>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        width="100%"
+        maxW={`${size}px`}
+        px={2}
+        mt={-1}
+      >
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          0
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          0.8
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          1.3
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          2.0
+        </Text>
       </Box>
     </Box>
   )

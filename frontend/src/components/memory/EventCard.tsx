@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import {
-  Badge,
-  Box,
-  Collapse,
-  Flex,
-  List,
-  ListItem,
-  Text,
-} from '@chakra-ui/react'
+import { Badge, Box, Collapse, Flex, List, ListItem, Text } from '@chakra-ui/react'
 import type { PerformanceEvent } from '../../types'
 
 /** RPE color scale — matches ACWR semantic token pattern */
@@ -55,12 +47,7 @@ export function EventCard({ event }: EventCardProps) {
       {/* Collapsed summary row */}
       <Flex align="center" justify="space-between" gap={3} wrap="wrap">
         <Flex align="center" gap={2} minW={0}>
-          <Text
-            fontSize="sm"
-            fontWeight="semibold"
-            color="text.primary"
-            textTransform="capitalize"
-          >
+          <Text fontSize="sm" fontWeight="semibold" color="text.primary" textTransform="capitalize">
             {event.discipline}
           </Text>
           <Text fontSize="sm" color="text.muted">
@@ -109,7 +96,13 @@ export function EventCard({ event }: EventCardProps) {
           {/* Root Causes */}
           {event.root_causes.length > 0 && (
             <Box mb={2}>
-              <Text fontSize="xs" color="text.muted" textTransform="uppercase" fontWeight="medium" mb={1}>
+              <Text
+                fontSize="xs"
+                color="text.muted"
+                textTransform="uppercase"
+                fontWeight="medium"
+                mb={1}
+              >
                 Root Causes
               </Text>
               <List spacing={0.5} pl={4} styleType="disc">
@@ -125,7 +118,13 @@ export function EventCard({ event }: EventCardProps) {
           {/* Highlights */}
           {event.highlights.length > 0 && (
             <Box mb={2}>
-              <Text fontSize="xs" color="text.muted" textTransform="uppercase" fontWeight="medium" mb={1}>
+              <Text
+                fontSize="xs"
+                color="text.muted"
+                textTransform="uppercase"
+                fontWeight="medium"
+                mb={1}
+              >
                 Highlights
               </Text>
               <List spacing={0.5} pl={4} styleType="disc">
@@ -154,7 +153,12 @@ export function EventCard({ event }: EventCardProps) {
           <Flex gap={4} wrap="wrap" mb={2}>
             {event.failure_domain && (
               <Flex gap={2} align="baseline">
-                <Text fontSize="xs" color="text.muted" textTransform="uppercase" fontWeight="medium">
+                <Text
+                  fontSize="xs"
+                  color="text.muted"
+                  textTransform="uppercase"
+                  fontWeight="medium"
+                >
                   Failure
                 </Text>
                 <Text fontSize="sm" color="text.secondary" textTransform="capitalize">
@@ -164,7 +168,12 @@ export function EventCard({ event }: EventCardProps) {
             )}
             {event.cns_status && (
               <Flex gap={2} align="baseline">
-                <Text fontSize="xs" color="text.muted" textTransform="uppercase" fontWeight="medium">
+                <Text
+                  fontSize="xs"
+                  color="text.muted"
+                  textTransform="uppercase"
+                  fontWeight="medium"
+                >
                   CNS
                 </Text>
                 <Text fontSize="sm" color="text.secondary" textTransform="capitalize">

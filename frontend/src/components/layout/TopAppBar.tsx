@@ -24,13 +24,7 @@ export function TopAppBar({ title }: TopAppBarProps) {
       </Link>
 
       {title && (
-        <Text
-          fontSize="sm"
-          color="text.secondary"
-          noOfLines={1}
-          maxW="50%"
-          textAlign="center"
-        >
+        <Text fontSize="sm" color="text.secondary" noOfLines={1} maxW="50%" textAlign="center">
           {title}
         </Text>
       )}

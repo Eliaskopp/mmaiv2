@@ -60,12 +60,7 @@ export function FloatingActionMenu({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <Box
-            position="fixed"
-            inset={0}
-            zIndex="popover"
-            onClick={onClose}
-          />
+          <Box position="fixed" inset={0} zIndex="popover" onClick={onClose} />
           {/* Menu */}
           <MotionBox
             position="absolute"

@@ -112,17 +112,27 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
   const updateMutation = useUpdateJournalSession()
   const isEditing = !!editingSession
 
-  const { control, handleSubmit, reset, getValues, setValue: setFormValue, formState: { errors } } = useForm<FormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    getValues,
+    setValue: setFormValue,
+    formState: { errors },
+  } = useForm<FormValues>({
     defaultValues: getDefaults(),
   })
 
   const durationValue = useWatch({ control, name: 'duration_minutes' })
 
-  const handleTranscriptComplete = useCallback((transcript: string) => {
-    const current = getValues('notes')
-    const spacer = current && !current.endsWith(' ') ? ' ' : ''
-    setFormValue('notes', current + spacer + transcript)
-  }, [getValues, setFormValue])
+  const handleTranscriptComplete = useCallback(
+    (transcript: string) => {
+      const current = getValues('notes')
+      const spacer = current && !current.endsWith(' ') ? ' ' : ''
+      setFormValue('notes', current + spacer + transcript)
+    },
+    [getValues, setFormValue],
+  )
 
   const speech = useSpeechRecognition({ onTranscriptComplete: handleTranscriptComplete })
 
@@ -160,7 +170,9 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
         notes: values.notes || null,
         duration_minutes: values.duration_minutes ? Number(values.duration_minutes) : null,
         rounds: values.rounds ? Number(values.rounds) : null,
-        round_duration_minutes: values.round_duration_minutes ? Number(values.round_duration_minutes) : null,
+        round_duration_minutes: values.round_duration_minutes
+          ? Number(values.round_duration_minutes)
+          : null,
         intensity_rpe: values.intensity_rpe,
         mood_before: values.mood_before ? Number(values.mood_before) : null,
         mood_after: values.mood_after ? Number(values.mood_after) : null,
@@ -170,16 +182,20 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
         gym_name: values.gym_name || null,
         source: 'manual',
       }
-      updateMutation.mutate({ id: editingSession!.id, body }, {
-        onSuccess: () => {
-          toast({ title: 'Session updated', status: 'success', duration: 3000 })
-          onSuccess()
+      updateMutation.mutate(
+        { id: editingSession!.id, body },
+        {
+          onSuccess: () => {
+            toast({ title: 'Session updated', status: 'success', duration: 3000 })
+            onSuccess()
+          },
+          onError: (err) => {
+            const msg =
+              (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
+            toast({ title: msg, status: 'error', duration: 4000 })
+          },
         },
-        onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
-          toast({ title: msg, status: 'error', duration: 4000 })
-        },
-      })
+      )
     } else {
       const body: SessionCreate = {
         session_type: values.session_type as SessionType,
@@ -188,7 +204,9 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
         notes: values.notes || null,
         duration_minutes: values.duration_minutes ? Number(values.duration_minutes) : null,
         rounds: values.rounds ? Number(values.rounds) : null,
-        round_duration_minutes: values.round_duration_minutes ? Number(values.round_duration_minutes) : null,
+        round_duration_minutes: values.round_duration_minutes
+          ? Number(values.round_duration_minutes)
+          : null,
         intensity_rpe: values.intensity_rpe,
         mood_before: values.mood_before ? Number(values.mood_before) : null,
         mood_after: values.mood_after ? Number(values.mood_after) : null,
@@ -205,7 +223,8 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
           onSuccess()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Log failed'
+          const msg =
+            (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Log failed'
           toast({ title: msg, status: 'error', duration: 4000 })
         },
       })
@@ -286,9 +305,7 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
           <Controller
             name="intensity_rpe"
             control={control}
-            render={({ field }) => (
-              <RPEPicker value={field.value} onChange={field.onChange} />
-            )}
+            render={({ field }) => <RPEPicker value={field.value} onChange={field.onChange} />}
           />
         </FormControl>
 
@@ -311,9 +328,7 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
               <Controller
                 name="session_date"
                 control={control}
-                render={({ field }) => (
-                  <Input {...field} type="date" size="sm" />
-                )}
+                render={({ field }) => <Input {...field} type="date" size="sm" />}
               />
             </FormControl>
 
@@ -450,7 +465,9 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
 
             <FormControl>
               <Flex align="center" justify="space-between">
-                <FormLabel fontSize="sm" mb={0}>Notes</FormLabel>
+                <FormLabel fontSize="sm" mb={0}>
+                  Notes
+                </FormLabel>
                 {speech.isSupported && (
                   <IconButton
                     aria-label={speech.isListening ? 'Stop listening' : 'Voice input'}
@@ -482,13 +499,7 @@ export function SessionForm({ mode, editingSession, onSuccess, onCancel }: Sessi
           </>
         )}
 
-        <Button
-          type="submit"
-          colorScheme="brand"
-          width="full"
-          isLoading={isPending}
-          size="md"
-        >
+        <Button type="submit" colorScheme="brand" width="full" isLoading={isPending} size="md">
           {isEditing ? 'Save Changes' : 'Log Session'}
         </Button>
 

@@ -31,13 +31,8 @@ export function JournalPage() {
 
   const filters = useMemo(() => ({}), [])
 
-  const {
-    data,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useInfiniteJournalSessions(filters)
+  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteJournalSessions(filters)
 
   const deleteMutation = useDeleteJournalSession()
 
@@ -45,10 +40,7 @@ export function JournalPage() {
   const [pendingSessions, _setPendingSessions] = useState<SessionResponse[]>([])
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
 
-  const flattenedPages = useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
-    [data],
-  )
+  const flattenedPages = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data])
 
   const visibleSessions = useMemo(
     () => [...pendingSessions, ...flattenedPages].filter((s) => !deletedIds.has(s.id)),
@@ -78,7 +70,8 @@ export function JournalPage() {
           next.delete(id)
           return next
         })
-        const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
+        const msg =
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
         toast({ title: msg, status: 'error', duration: 4000 })
       },
     })
@@ -118,7 +111,10 @@ export function JournalPage() {
       {/* Edit Drawer */}
       <Drawer
         isOpen={isOpen}
-        onClose={() => { onClose(); setEditingSession(undefined) }}
+        onClose={() => {
+          onClose()
+          setEditingSession(undefined)
+        }}
         placement="bottom"
       >
         <DrawerOverlay />
@@ -133,7 +129,10 @@ export function JournalPage() {
                 mode="full"
                 editingSession={editingSession}
                 onSuccess={handleEditSuccess}
-                onCancel={() => { onClose(); setEditingSession(undefined) }}
+                onCancel={() => {
+                  onClose()
+                  setEditingSession(undefined)
+                }}
               />
             </Box>
           </DrawerBody>

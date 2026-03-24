@@ -21,7 +21,7 @@ import type { LayoutOutletContext } from '../types'
 
 const DAY_OPTIONS = [7, 14, 30] as const
 const TABS = ['volume', 'intelligence'] as const
-type Tab = typeof TABS[number]
+type Tab = (typeof TABS)[number]
 
 export function StatsPage() {
   const { setPageTitle } = useOutletContext<LayoutOutletContext>()
@@ -38,23 +38,37 @@ export function StatsPage() {
   const activeTab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'intelligence'
 
   function setTab(tab: Tab) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (tab === 'intelligence') { next.delete('tab') } else { next.set('tab', tab) }
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (tab === 'intelligence') {
+          next.delete('tab')
+        } else {
+          next.set('tab', tab)
+        }
+        return next
+      },
+      { replace: true },
+    )
   }
 
   // ── Volume-specific state ──────────────────────────────────────────
   const rawDays = Number(searchParams.get('days'))
-  const days = DAY_OPTIONS.includes(rawDays as typeof DAY_OPTIONS[number]) ? rawDays : 30
+  const days = DAY_OPTIONS.includes(rawDays as (typeof DAY_OPTIONS)[number]) ? rawDays : 30
 
   function setDays(value: number) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (value === 30) { next.delete('days') } else { next.set('days', String(value)) }
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (value === 30) {
+          next.delete('days')
+        } else {
+          next.set('days', String(value))
+        }
+        return next
+      },
+      { replace: true },
+    )
   }
 
   const { data: acwr, isLoading: acwrLoading, isError: acwrError } = useACWR()
@@ -91,7 +105,9 @@ export function StatsPage() {
             {acwrLoading ? (
               <Skeleton height="120px" borderRadius="lg" />
             ) : acwrError ? (
-              <Text color="red.400" fontSize="sm">Failed to load training status.</Text>
+              <Text color="red.400" fontSize="sm">
+                Failed to load training status.
+              </Text>
             ) : acwr ? (
               <ExertionStatus
                 riskZone={acwr.risk_zone}
@@ -124,14 +140,10 @@ export function StatsPage() {
                   letterSpacing="wide"
                   textAlign="center"
                 >
-                  <Text
-                    as="span"
-                    fontWeight="bold"
-                    sx={{ fontVariantNumeric: 'tabular-nums' }}
-                  >
+                  <Text as="span" fontWeight="bold" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                     {acwr?.session_count ?? 0} / 4
-                  </Text>
-                  {' '}sessions logged
+                  </Text>{' '}
+                  sessions logged
                 </Text>
               </Box>
             ) : (
@@ -176,7 +188,9 @@ export function StatsPage() {
               {volumeLoading ? (
                 <Skeleton height="300px" borderRadius="lg" />
               ) : volumeError ? (
-                <Text color="red.400" fontSize="sm">Failed to load volume trends.</Text>
+                <Text color="red.400" fontSize="sm">
+                  Failed to load volume trends.
+                </Text>
               ) : volume ? (
                 <VolumeTrendChart data={volume} />
               ) : null}

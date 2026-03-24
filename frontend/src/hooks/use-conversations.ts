@@ -127,9 +127,7 @@ export function useSendMessage() {
     onMutate: async ({ conversationId, content, retryId }) => {
       await queryClient.cancelQueries({ queryKey: [...MESSAGES_KEY, conversationId] })
 
-      const previous = queryClient.getQueryData<ChatMessageList>(
-        [...MESSAGES_KEY, conversationId],
-      )
+      const previous = queryClient.getQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId])
 
       const optimisticId = retryId ?? `optimistic-${Date.now()}`
 
@@ -139,9 +137,7 @@ export function useSendMessage() {
         if (retryId) {
           // Retry: flip errored message back to pending in-place
           newItems = previous.items.map((m) =>
-            m.id === retryId
-              ? { ...m, status: 'pending' as const, errorReason: undefined }
-              : m,
+            m.id === retryId ? { ...m, status: 'pending' as const, errorReason: undefined } : m,
           )
         } else {
           // Fresh send: append optimistic message
@@ -157,10 +153,11 @@ export function useSendMessage() {
           newItems = [...previous.items, optimisticMsg]
         }
 
-        queryClient.setQueryData<ChatMessageList>(
-          [...MESSAGES_KEY, conversationId],
-          { ...previous, items: newItems, total: newItems.length },
-        )
+        queryClient.setQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId], {
+          ...previous,
+          items: newItems,
+          total: newItems.length,
+        })
       }
 
       return { optimisticId, conversationId }
@@ -169,18 +166,17 @@ export function useSendMessage() {
     onSuccess: (newMessages, { conversationId }, context) => {
       if (!context) return
 
-      const current = queryClient.getQueryData<ChatMessageList>(
-        [...MESSAGES_KEY, conversationId],
-      )
+      const current = queryClient.getQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId])
       if (current) {
         const confirmedMessages = newMessages.map(hydrate)
         const items = current.items.flatMap((m) =>
           m.id === context.optimisticId ? confirmedMessages : [m],
         )
-        queryClient.setQueryData<ChatMessageList>(
-          [...MESSAGES_KEY, conversationId],
-          { ...current, items, total: items.length },
-        )
+        queryClient.setQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId], {
+          ...current,
+          items,
+          total: items.length,
+        })
       }
 
       queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEY })
@@ -190,9 +186,7 @@ export function useSendMessage() {
     onError: (error, { conversationId }, context) => {
       if (!context) return
 
-      const current = queryClient.getQueryData<ChatMessageList>(
-        [...MESSAGES_KEY, conversationId],
-      )
+      const current = queryClient.getQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId])
       const toastInfo = getErrorToast(error)
 
       if (current) {
@@ -201,10 +195,10 @@ export function useSendMessage() {
             ? { ...m, status: 'error' as const, errorReason: toastInfo.description }
             : m,
         )
-        queryClient.setQueryData<ChatMessageList>(
-          [...MESSAGES_KEY, conversationId],
-          { ...current, items },
-        )
+        queryClient.setQueryData<ChatMessageList>([...MESSAGES_KEY, conversationId], {
+          ...current,
+          items,
+        })
       }
 
       toast({

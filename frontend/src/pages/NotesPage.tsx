@@ -40,31 +40,49 @@ export function NotesPage() {
 
   // Derive filter state from URL search params
   const rawType = searchParams.get('type')
-  const typeFilter: NoteType | null = rawType && NOTE_TYPES.has(rawType) ? rawType as NoteType : null
+  const typeFilter: NoteType | null =
+    rawType && NOTE_TYPES.has(rawType) ? (rawType as NoteType) : null
   const pinnedOnly = searchParams.get('pinned') === 'true'
 
   function setTypeFilter(type: NoteType | null) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (type) { next.set('type', type) } else { next.delete('type') }
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (type) {
+          next.set('type', type)
+        } else {
+          next.delete('type')
+        }
+        return next
+      },
+      { replace: true },
+    )
   }
 
   function togglePinned() {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (pinnedOnly) { next.delete('pinned') } else { next.set('pinned', 'true') }
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (pinnedOnly) {
+          next.delete('pinned')
+        } else {
+          next.set('pinned', 'true')
+        }
+        return next
+      },
+      { replace: true },
+    )
   }
 
-  const filters = useMemo(() => ({
-    limit: 100,
-    status: 'active' as const,
-    ...(typeFilter ? { type: typeFilter } : {}),
-    ...(pinnedOnly ? { pinned: true } : {}),
-  }), [typeFilter, pinnedOnly])
+  const filters = useMemo(
+    () => ({
+      limit: 100,
+      status: 'active' as const,
+      ...(typeFilter ? { type: typeFilter } : {}),
+      ...(pinnedOnly ? { pinned: true } : {}),
+    }),
+    [typeFilter, pinnedOnly],
+  )
 
   const { data, isLoading } = useNotes(filters)
 
@@ -104,7 +122,7 @@ export function NotesPage() {
                 color={isSelected ? 'chat.user.text' : 'text.primary'}
                 borderColor="transparent"
                 _hover={{ bg: isSelected ? 'brand.600' : 'bg.panel' }}
-                onClick={() => setTypeFilter(isSelected ? null : opt.value as NoteType)}
+                onClick={() => setTypeFilter(isSelected ? null : (opt.value as NoteType))}
                 size="sm"
                 minH="48px"
                 minW="auto"
@@ -171,11 +189,7 @@ export function NotesPage() {
       </VStack>
 
       {/* Edit/View Drawer */}
-      <NoteDrawer
-        note={selectedNote}
-        isOpen={isOpen}
-        onClose={handleDrawerClose}
-      />
+      <NoteDrawer note={selectedNote} isOpen={isOpen} onClose={handleDrawerClose} />
     </Container>
   )
 }

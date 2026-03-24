@@ -101,15 +101,24 @@ export function RecoveryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const selectedDate = searchParams.get('date') || todayISO()
+  const [showForm, setShowForm] = useState(false)
 
   function setSelectedDate(next: string | ((prev: string) => string)) {
-    setSearchParams((prev) => {
-      const current = prev.get('date') || todayISO()
-      const value = typeof next === 'function' ? next(current) : next
-      const params = new URLSearchParams(prev)
-      if (value === todayISO()) { params.delete('date') } else { params.set('date', value) }
-      return params
-    }, { replace: true })
+    setShowForm(false)
+    setSearchParams(
+      (prev) => {
+        const current = prev.get('date') || todayISO()
+        const value = typeof next === 'function' ? next(current) : next
+        const params = new URLSearchParams(prev)
+        if (value === todayISO()) {
+          params.delete('date')
+        } else {
+          params.set('date', value)
+        }
+        return params
+      },
+      { replace: true },
+    )
   }
 
   useEffect(() => {
@@ -123,8 +132,6 @@ export function RecoveryPage() {
   const is404 = isError && (error as AxiosError)?.response?.status === 404
   const isRealError = isError && !is404
   const isEditing = !!existingLog && !is404
-
-  const [showForm, setShowForm] = useState(false)
 
   const { control, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: DEFAULTS,
@@ -144,11 +151,6 @@ export function RecoveryPage() {
     }
   }, [existingLog, is404, isError, reset])
 
-  // Hide form when navigating to a date with no log
-  useEffect(() => {
-    if (is404) setShowForm(false)
-  }, [is404, selectedDate])
-
   function onSubmit(values: FormValues) {
     const body: RecoveryLogCreate = {
       sleep_quality: values.sleep_quality,
@@ -166,7 +168,8 @@ export function RecoveryPage() {
         })
       },
       onError: (err) => {
-        const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Save failed'
+        const msg =
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Save failed'
         toast({ title: msg, status: 'error', duration: 4000 })
       },
     })
@@ -217,11 +220,7 @@ export function RecoveryPage() {
             <Text fontSize="sm" color="text.muted" mb={6}>
               Track your sleep, stress, and soreness to unlock recovery insights.
             </Text>
-            <Button
-              colorScheme="brand"
-              size="lg"
-              onClick={() => setShowForm(true)}
-            >
+            <Button colorScheme="brand" size="lg" onClick={() => setShowForm(true)}>
               {selectedDate === todayISO()
                 ? "Log Today's Recovery"
                 : `Log Recovery for ${formatDateLabel(selectedDate)}`}
@@ -231,108 +230,108 @@ export function RecoveryPage() {
 
         {/* Wellness Survey Card */}
         {(isEditing || showForm || (!is404 && !isRealError)) && (
-        <Box
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
-          bg="bg.subtle"
-          p={5}
-          borderRadius="lg"
-        >
-          <VStack spacing={5} align="stretch">
-            {/* Sleep Quality — Slider */}
-            <FormControl>
-              <FormLabel fontSize="sm">Sleep Quality</FormLabel>
-              <Controller
-                name="sleep_quality"
-                control={control}
-                render={({ field }) => (
-                  <Box px={2}>
-                    <Slider
-                      min={1}
-                      max={5}
-                      step={1}
+          <Box as="form" onSubmit={handleSubmit(onSubmit)} bg="bg.subtle" p={5} borderRadius="lg">
+            <VStack spacing={5} align="stretch">
+              {/* Sleep Quality — Slider */}
+              <FormControl>
+                <FormLabel fontSize="sm">Sleep Quality</FormLabel>
+                <Controller
+                  name="sleep_quality"
+                  control={control}
+                  render={({ field }) => (
+                    <Box px={2}>
+                      <Slider
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={field.value}
+                        onChange={field.onChange}
+                        aria-label="Sleep Quality"
+                        aria-valuetext={SLEEP_LABELS[field.value]}
+                      >
+                        <SliderTrack>
+                          <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />
+                        </SliderTrack>
+                        <SliderThumb boxSize={6} />
+                      </Slider>
+                      <Text
+                        fontSize="sm"
+                        color="text.secondary"
+                        mt={1}
+                        textAlign="center"
+                        sx={{ fontVariantNumeric: 'tabular-nums' }}
+                      >
+                        {field.value} — {SLEEP_LABELS[field.value]}
+                      </Text>
+                    </Box>
+                  )}
+                />
+              </FormControl>
+
+              {/* Soreness — ChoiceChipGroup */}
+              <FormControl>
+                <FormLabel fontSize="sm">Soreness</FormLabel>
+                <Controller
+                  name="soreness"
+                  control={control}
+                  render={({ field }) => (
+                    <ChoiceChipGroup
+                      options={SORENESS_OPTIONS}
                       value={field.value}
                       onChange={field.onChange}
-                      aria-label="Sleep Quality"
-                      aria-valuetext={SLEEP_LABELS[field.value]}
-                    >
-                      <SliderTrack>
-                        <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />
-                      </SliderTrack>
-                      <SliderThumb boxSize={6} />
-                    </Slider>
-                    <Text fontSize="sm" color="text.secondary" mt={1} textAlign="center" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                      {field.value} — {SLEEP_LABELS[field.value]}
-                    </Text>
-                  </Box>
-                )}
-              />
-            </FormControl>
+                      columns={5}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Soreness — ChoiceChipGroup */}
-            <FormControl>
-              <FormLabel fontSize="sm">Soreness</FormLabel>
-              <Controller
-                name="soreness"
-                control={control}
-                render={({ field }) => (
-                  <ChoiceChipGroup
-                    options={SORENESS_OPTIONS}
-                    value={field.value}
-                    onChange={field.onChange}
-                    columns={5}
-                  />
-                )}
-              />
-            </FormControl>
+              {/* Energy — ChoiceChipGroup */}
+              <FormControl>
+                <FormLabel fontSize="sm">Energy</FormLabel>
+                <Controller
+                  name="energy"
+                  control={control}
+                  render={({ field }) => (
+                    <ChoiceChipGroup
+                      options={ENERGY_OPTIONS}
+                      value={field.value}
+                      onChange={field.onChange}
+                      columns={5}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Energy — ChoiceChipGroup */}
-            <FormControl>
-              <FormLabel fontSize="sm">Energy</FormLabel>
-              <Controller
-                name="energy"
-                control={control}
-                render={({ field }) => (
-                  <ChoiceChipGroup
-                    options={ENERGY_OPTIONS}
-                    value={field.value}
-                    onChange={field.onChange}
-                    columns={5}
-                  />
-                )}
-              />
-            </FormControl>
+              {/* Notes — Textarea */}
+              <FormControl>
+                <FormLabel fontSize="sm">Notes</FormLabel>
+                <Controller
+                  name="notes"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      placeholder="How are you feeling today?"
+                      maxLength={2000}
+                      size="sm"
+                      rows={3}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Notes — Textarea */}
-            <FormControl>
-              <FormLabel fontSize="sm">Notes</FormLabel>
-              <Controller
-                name="notes"
-                control={control}
-                render={({ field }) => (
-                  <Textarea
-                    {...field}
-                    placeholder="How are you feeling today?"
-                    maxLength={2000}
-                    size="sm"
-                    rows={3}
-                  />
-                )}
-              />
-            </FormControl>
-
-            {/* Save Button */}
-            <Button
-              type="submit"
-              colorScheme="brand"
-              size="lg"
-              width="full"
-              isLoading={upsertMutation.isPending}
-            >
-              {isEditing ? 'Update Log' : 'Save Log'}
-            </Button>
-          </VStack>
-        </Box>
+              {/* Save Button */}
+              <Button
+                type="submit"
+                colorScheme="brand"
+                size="lg"
+                width="full"
+                isLoading={upsertMutation.isPending}
+              >
+                {isEditing ? 'Update Log' : 'Save Log'}
+              </Button>
+            </VStack>
+          </Box>
         )}
       </VStack>
     </Container>

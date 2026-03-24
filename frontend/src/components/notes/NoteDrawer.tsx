@@ -90,7 +90,8 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
           onClose()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
+          const msg =
+            (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
           toast({ title: msg, status: 'error', duration: 4000 })
         },
       },
@@ -128,7 +129,8 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
           onClose()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Archive failed'
+          const msg =
+            (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Archive failed'
           toast({ title: msg, status: 'error', duration: 4000 })
         },
       },
@@ -150,7 +152,8 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
         onClose()
       },
       onError: (err) => {
-        const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
+        const msg =
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
         toast({ title: msg, status: 'error', duration: 4000 })
         onDeleteClose()
       },
@@ -259,9 +262,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="title"
                   control={control}
                   rules={{ required: true, maxLength: 200 }}
-                  render={({ field }) => (
-                    <Input {...field} size="sm" maxLength={200} />
-                  )}
+                  render={({ field }) => <Input {...field} size="sm" maxLength={200} />}
                 />
               </FormControl>
 
@@ -272,12 +273,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="summary"
                   control={control}
                   render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      size="sm"
-                      rows={3}
-                      placeholder="Key details..."
-                    />
+                    <Textarea {...field} size="sm" rows={3} placeholder="Key details..." />
                   )}
                 />
               </FormControl>
@@ -289,12 +285,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="user_notes"
                   control={control}
                   render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      size="sm"
-                      rows={4}
-                      placeholder="Add your own notes..."
-                    />
+                    <Textarea {...field} size="sm" rows={4} placeholder="Add your own notes..." />
                   )}
                 />
               </FormControl>
