@@ -8,15 +8,11 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
-  Flex,
-  Skeleton,
-  Text,
   useDisclosure,
   useToast,
   VStack,
 } from '@chakra-ui/react'
-import { Link as RouterLink, useOutletContext } from 'react-router-dom'
-import { useACWR } from '../hooks/use-stats'
+import { useOutletContext } from 'react-router-dom'
 import { JournalList } from '../components/journal/JournalList'
 import { SessionForm } from '../components/journal/SessionForm'
 import { useInfiniteJournalSessions, useDeleteJournalSession } from '../hooks/use-journal'
@@ -35,7 +31,6 @@ export function JournalPage() {
 
   const filters = useMemo(() => ({}), [])
 
-  const { data: acwr, isLoading: acwrLoading } = useACWR()
   const {
     data,
     isLoading,
@@ -109,40 +104,6 @@ export function JournalPage() {
   return (
     <Container maxW="container.md" py={4}>
       <VStack spacing={4} align="stretch">
-        {/* Compact ACWR widget — links to /stats */}
-        <Box
-          as={RouterLink}
-          to="/stats"
-          bg="bg.subtle"
-          p={4}
-          borderRadius="lg"
-          _hover={{ bg: 'bg.muted' }}
-          transition="background 0.15s ease"
-          cursor="pointer"
-          display="block"
-          textDecoration="none"
-        >
-          <Flex align="center" gap={4}>
-            <Box>
-              <Text fontSize="sm" fontWeight="semibold" color="text.primary">
-                Training Load
-              </Text>
-              {acwrLoading ? (
-                <Skeleton height="14px" width="140px" mt={1} />
-              ) : (
-                <Text fontSize="xs" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                  ACWR: {acwr?.is_calibrating ? 'Calibrating' : acwr?.acwr_ratio?.toFixed(2) ?? '--'} &middot;{' '}
-                  {acwr?.is_calibrating ? 'Calibrating' :
-                   acwr?.risk_zone === 'optimal' ? 'Optimal' :
-                   acwr?.risk_zone === 'high' ? 'High' :
-                   acwr?.risk_zone === 'very_high' ? 'Danger' :
-                   acwr?.risk_zone === 'low' ? 'Low' : 'No data'}
-                </Text>
-              )}
-            </Box>
-            <Text ml="auto" color="text.muted" fontSize="lg">&rsaquo;</Text>
-          </Flex>
-        </Box>
         <JournalList
           sessions={visibleSessions}
           isLoading={isLoading}
