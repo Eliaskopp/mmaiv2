@@ -48,6 +48,7 @@ async def test_acwr_no_sessions(client: AsyncClient):
     assert body["acwr_ratio"] is None
     assert body["risk_zone"] == "insufficient_data"
     assert body["is_calibrating"] is True
+    assert body["session_count"] == 0
 
 
 @pytest.mark.asyncio
@@ -69,6 +70,7 @@ async def test_acwr_acute_only(client: AsyncClient):
     assert body["acwr_ratio"] is None
     assert body["risk_zone"] == "insufficient_data"
     assert body["is_calibrating"] is True
+    assert body["session_count"] == 1
 
 
 @pytest.mark.asyncio
@@ -100,6 +102,7 @@ async def test_acwr_known_values(client: AsyncClient):
     assert body["risk_zone"] == "very_high"
     # 5 sessions spanning 23 days → calibrated
     assert body["is_calibrating"] is False
+    assert body["session_count"] == 5
 
 
 @pytest.mark.asyncio
@@ -126,6 +129,7 @@ async def test_acwr_optimal_zone(client: AsyncClient):
     assert body["risk_zone"] == "optimal"
     # 4 sessions spanning 21 days → calibrated
     assert body["is_calibrating"] is False
+    assert body["session_count"] == 4
 
 
 @pytest.mark.asyncio

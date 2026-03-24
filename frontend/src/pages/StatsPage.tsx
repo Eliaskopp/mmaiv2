@@ -6,6 +6,7 @@ import {
   Container,
   Flex,
   HStack,
+  Progress,
   Skeleton,
   Text,
   VStack,
@@ -34,12 +35,12 @@ export function StatsPage() {
 
   // ── Tab state from URL ─────────────────────────────────────────────
   const rawTab = searchParams.get('tab')
-  const activeTab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'volume'
+  const activeTab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'intelligence'
 
   function setTab(tab: Tab) {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
-      if (tab === 'volume') { next.delete('tab') } else { next.set('tab', tab) }
+      if (tab === 'intelligence') { next.delete('tab') } else { next.set('tab', tab) }
       return next
     }, { replace: true })
   }
@@ -101,13 +102,40 @@ export function StatsPage() {
               />
             ) : null}
 
-            {/* Risk Gauge */}
+            {/* Risk Gauge / Calibration Bar */}
             {acwrLoading ? (
               <Flex justify="center">
                 <Skeleton height="130px" width="200px" borderRadius="lg" />
               </Flex>
+            ) : acwr?.is_calibrating || acwr?.risk_zone === 'insufficient_data' ? (
+              <Box bg="bg.subtle" p={4} borderRadius="lg">
+                <Progress
+                  value={Math.min(((acwr?.session_count ?? 0) / 4) * 100, 100)}
+                  size="sm"
+                  colorScheme="brand"
+                  borderRadius="full"
+                  bg="whiteAlpha.100"
+                  mb={2}
+                />
+                <Text
+                  textTransform="uppercase"
+                  fontSize="xs"
+                  color="text.muted"
+                  letterSpacing="wide"
+                  textAlign="center"
+                >
+                  <Text
+                    as="span"
+                    fontWeight="bold"
+                    sx={{ fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {acwr?.session_count ?? 0} / 4
+                  </Text>
+                  {' '}sessions logged
+                </Text>
+              </Box>
             ) : (
-              <RiskGauge ratio={acwr?.acwr_ratio ?? null} isCalibrating={acwr?.is_calibrating} />
+              <RiskGauge ratio={acwr?.acwr_ratio ?? null} isCalibrating={false} />
             )}
 
             {/* Volume Section Toggle + Day Selector */}

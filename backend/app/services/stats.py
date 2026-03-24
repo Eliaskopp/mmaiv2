@@ -86,6 +86,7 @@ async def get_acwr(
         "acwr_ratio": effective_ratio,
         "risk_zone": _risk_zone(effective_ratio),
         "is_calibrating": is_calibrating,
+        "session_count": session_count,
     }
 
 
