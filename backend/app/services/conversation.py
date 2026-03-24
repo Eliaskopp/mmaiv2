@@ -1,8 +1,11 @@
+import logging
 import uuid
 from datetime import date, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.core.exceptions import EntityNotFoundError, QuotaExceededError
@@ -90,7 +93,7 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
                 session_lines.append(" | ".join(parts))
             context_lines.append("Recent Sessions (last 7 days):\n" + "\n".join(session_lines))
     except Exception:
-        pass
+        logger.warning("Failed to fetch recent training sessions for user=%s", user_id, exc_info=True)
 
     # Fetch ACWR
     try:
@@ -102,7 +105,7 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
                 f"ACWR: {acwr_data['acwr_ratio']} ({acwr_data['risk_zone']} risk zone){cal_note}"
             )
     except Exception:
-        pass
+        logger.warning("Failed to fetch ACWR stats for user=%s", user_id, exc_info=True)
 
     # Fetch memory telemetry — recent performance events + training state
     try:
@@ -143,7 +146,7 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
             if state_parts:
                 context_lines.append("Training State: " + ". ".join(state_parts) + ".")
     except Exception:
-        pass
+        logger.warning("Failed to fetch memory telemetry for user=%s", user_id, exc_info=True)
 
     athlete_context = "\n".join(context_lines) if context_lines else "No profile or recovery data available."
     return COACH_SYSTEM_PROMPT.replace("{athlete_context}", athlete_context)

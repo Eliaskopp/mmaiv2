@@ -116,11 +116,6 @@ export function ProfilePage() {
     weightClassValue !== '' && !WEIGHT_CLASS_KNOWN.includes(weightClassValue)
   const [showCustomWeight, setShowCustomWeight] = useState(false)
 
-  // Sync showCustomWeight when form resets with an "Other" value
-  if (isCustomWeightClass && !showCustomWeight) {
-    setShowCustomWeight(true)
-  }
-
   useEffect(() => {
     if (profile) {
       reset({
