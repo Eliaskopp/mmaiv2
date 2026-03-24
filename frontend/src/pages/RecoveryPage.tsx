@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
   Box,
@@ -17,7 +17,7 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Heart } from 'lucide-react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { ChoiceChipGroup } from '../components/ChoiceChipGroup'
 import { useRecoveryLog, useUpsertRecoveryLog } from '../hooks/use-recovery'
@@ -124,6 +124,8 @@ export function RecoveryPage() {
   const isRealError = isError && !is404
   const isEditing = !!existingLog && !is404
 
+  const [showForm, setShowForm] = useState(false)
+
   const { control, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: DEFAULTS,
   })
@@ -141,6 +143,11 @@ export function RecoveryPage() {
       reset(DEFAULTS)
     }
   }, [existingLog, is404, isError, reset])
+
+  // Hide form when navigating to a date with no log
+  useEffect(() => {
+    if (is404) setShowForm(false)
+  }, [is404, selectedDate])
 
   function onSubmit(values: FormValues) {
     const body: RecoveryLogCreate = {
@@ -200,7 +207,30 @@ export function RecoveryPage() {
           </Text>
         )}
 
+        {/* Empty state — no log for this date */}
+        {is404 && !showForm && (
+          <Box bg="bg.subtle" p={8} borderRadius="lg" textAlign="center">
+            <Box as={Heart} size={40} color="text.muted" mx="auto" mb={4} />
+            <Text fontSize="lg" fontWeight="bold" color="text.primary" mb={2}>
+              No recovery log for {formatDateLabel(selectedDate)}
+            </Text>
+            <Text fontSize="sm" color="text.muted" mb={6}>
+              Track your sleep, stress, and soreness to unlock recovery insights.
+            </Text>
+            <Button
+              colorScheme="brand"
+              size="lg"
+              onClick={() => setShowForm(true)}
+            >
+              {selectedDate === todayISO()
+                ? "Log Today's Recovery"
+                : `Log Recovery for ${formatDateLabel(selectedDate)}`}
+            </Button>
+          </Box>
+        )}
+
         {/* Wellness Survey Card */}
+        {(isEditing || showForm || (!is404 && !isRealError)) && (
         <Box
           as="form"
           onSubmit={handleSubmit(onSubmit)}
@@ -303,6 +333,7 @@ export function RecoveryPage() {
             </Button>
           </VStack>
         </Box>
+        )}
       </VStack>
     </Container>
   )
