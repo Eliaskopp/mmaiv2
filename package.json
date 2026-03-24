@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "devDependencies": {
+    "husky": "^9.1.0",
+    "lint-staged": "^16.1.0"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx}": [
+      "bash -c 'cd frontend && npx eslint --fix \"$@\"' --",
+      "bash -c 'cd frontend && npx prettier --write \"$@\"' --"
+    ]
+  },
+  "scripts": {
+    "prepare": "husky"
+  }
+}
