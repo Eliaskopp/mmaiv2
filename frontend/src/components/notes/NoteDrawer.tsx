@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Drawer,
@@ -14,14 +20,16 @@ import {
   HStack,
   IconButton,
   Input,
+  Spacer,
   Text,
   Textarea,
   VStack,
+  useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import { Archive, ExternalLink, Pin } from 'lucide-react'
+import { Archive, ExternalLink, Pin, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useUpdateNote } from '../../hooks/use-notes'
+import { useDeleteNote, useUpdateNote } from '../../hooks/use-notes'
 import type { NoteResponse, NoteUpdate } from '../../types'
 import type { AxiosError } from 'axios'
 
@@ -41,6 +49,9 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
   const toast = useToast()
   const navigate = useNavigate()
   const updateMutation = useUpdateNote()
+  const deleteMutation = useDeleteNote()
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
 
   // Track pinned state locally for optimistic toggle
   const [localPinned, setLocalPinned] = useState(false)
@@ -130,6 +141,22 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
     }
   }
 
+  function handleDelete() {
+    if (!note) return
+    deleteMutation.mutate(note.id, {
+      onSuccess: () => {
+        toast({ title: 'Note deleted', status: 'success', duration: 3000 })
+        onDeleteClose()
+        onClose()
+      },
+      onError: (err) => {
+        const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
+        toast({ title: msg, status: 'error', duration: 4000 })
+        onDeleteClose()
+      },
+    })
+  }
+
   const isAI = note?.source === 'ai'
   const typeLabel = note?.type ? note.type.charAt(0).toUpperCase() + note.type.slice(1) : ''
 
@@ -181,7 +208,49 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                     Go to Source
                   </Button>
                 )}
+                <Spacer />
+                <IconButton
+                  aria-label="Delete note"
+                  icon={<Trash2 size={18} />}
+                  variant="ghost"
+                  color="red.400"
+                  minH="48px"
+                  minW="48px"
+                  onClick={onDeleteOpen}
+                />
               </HStack>
+
+              {/* Delete confirmation dialog */}
+              <AlertDialog
+                isOpen={isDeleteOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onDeleteClose}
+                isCentered
+              >
+                <AlertDialogOverlay>
+                  <AlertDialogContent bg="bg.muted">
+                    <AlertDialogHeader fontSize="lg" fontWeight="bold" color="text.primary">
+                      Delete Note
+                    </AlertDialogHeader>
+                    <AlertDialogBody color="text.secondary">
+                      Delete this note permanently?
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                      <Button ref={cancelRef} onClick={onDeleteClose} variant="ghost">
+                        Cancel
+                      </Button>
+                      <Button
+                        colorScheme="red"
+                        onClick={handleDelete}
+                        ml={3}
+                        isLoading={deleteMutation.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialogOverlay>
+              </AlertDialog>
 
               {/* Title */}
               <FormControl>
