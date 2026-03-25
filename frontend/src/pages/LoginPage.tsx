@@ -8,11 +8,13 @@ import {
   FormLabel,
   Image,
   Input,
+  Select,
   Text,
   VStack,
   useToast,
 } from '@chakra-ui/react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 
 export function LoginPage() {
@@ -20,6 +22,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
+  const { t, i18n } = useTranslation()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,11 +51,22 @@ export function LoginPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
+        <Box display="flex" justifyContent="flex-end">
+          <Select
+            size="sm"
+            w="120px"
+            value={i18n.language.startsWith('nl') ? 'nl' : 'en'}
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+          >
+            <option value="en">English</option>
+            <option value="nl">Nederlands</option>
+          </Select>
+        </Box>
         <Image src="/logo.png" alt="MMAi" h="64px" mx="auto" />
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
             <FormControl isRequired>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('login.email')}</FormLabel>
               <Input
                 type="email"
                 value={email}
@@ -61,7 +75,7 @@ export function LoginPage() {
               />
             </FormControl>
             <FormControl isRequired>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('login.password')}</FormLabel>
               <Input
                 type="password"
                 value={password}
@@ -70,14 +84,14 @@ export function LoginPage() {
               />
             </FormControl>
             <Button type="submit" colorScheme="brand" width="full" isLoading={isSubmitting}>
-              Sign In
+              {t('login.submit')}
             </Button>
           </VStack>
         </Box>
         <Text textAlign="center" fontSize="sm">
-          Don't have an account?{' '}
+          {t('login.noAccount')}{' '}
           <Text as={Link} to="/register" color="brand.primary" fontWeight="medium">
-            Register
+            {t('login.register')}
           </Text>
         </Text>
       </VStack>

@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Center, Spinner } from '@chakra-ui/react'
+import i18n from 'i18next'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfile } from '../hooks/use-profile'
 import type { ReactNode } from 'react'
@@ -19,6 +21,12 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     enabled: isAuthenticated && !!user?.is_verified,
     retry: false,
   })
+
+  useEffect(() => {
+    if (profile?.language_code) {
+      i18n.changeLanguage(profile.language_code)
+    }
+  }, [profile?.language_code])
 
   if (authLoading) {
     return (
