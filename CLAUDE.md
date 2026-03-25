@@ -68,7 +68,34 @@ After completing any major feature, Git commit, or ADR, automatically generate a
 All Sync Blocks and ADRs written to `~/Digital Mind/MMAi-V2/` **MUST** use the plain-text Zettelkasten template. **Never use YAML frontmatter** (`---`):
 
 ```
-\n2026-03-11 19:00\n\nStatus: #child\n\nTags: [[tag1]] [[tag2]]\n\n# Title\n\n[Content]\n\n# Reference\n```
+2026-03-11 19:00
+
+Status: #child
+
+Tags: [[tag1]] [[tag2]]
+
+# Title
+
+[Content]
+
+# Reference
+```
+
+**File naming:** `YYYY-MM-DD-Topic-Name.md` (ISO-8601).
+
+### Template Fields
+
+- **Date line** — `YYYY-MM-DD HH:MM` at the top. Used for sorting and timeline views.
+- **Status** — Note maturity tag: `#baby` (stub/first draft), `#child` (developing, real content), `#adult` (mature, well-linked).
+- **Tags** — `[[wikilinks]]` connecting to other vault notes (e.g., `[[mmai-v2]] [[backend]]`).
+- **`# Reference`** — Always empty. Obsidian displays backlinks here automatically.
+
+### Note Types
+
+| Type | Location | Format | Purpose |
+|------|----------|--------|---------|
+| Zettelkasten notes | `Zettelkasten/` or `MMAi-V2/` | Template-based (structured) | Knowledge notes, ADRs, sync blocks |
+| Source notes | `2 - Source Material/` | Freeform (no template) | Raw reference material, bookmarks |
 
 ## Obsidian Vault Organization
 
@@ -76,6 +103,7 @@ All Sync Blocks and ADRs written to `~/Digital Mind/MMAi-V2/` **MUST** use the p
 |--------|----------|
 | `MMAi-V2/` | Project ADRs, Sync Blocks, session summaries |
 | `Zettelkasten/` | Atomic knowledge cards with real content only |
+| `2 - Source Material/` | Freeform reference notes (no template required) |
 | `3 - Tags/` | Empty pages as backlink anchors |
 
 - **Never** put empty anchor pages in `Zettelkasten/`
