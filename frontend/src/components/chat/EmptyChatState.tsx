@@ -1,22 +1,23 @@
 import { Button, Flex, Text, VStack } from '@chakra-ui/react'
 import { MessageCircle } from 'lucide-react'
-
-const SUGGESTED_PROMPTS = [
-  // App discovery
-  'What can you do as my AI coach?',
-  'How does my ACWR score track injury risk?',
-  'What should I log after each training session?',
-  // Coaching triggers
-  "I'm nervous about my first sparring session",
-  'Break down what makes a good rear cross',
-  "Help me debrief today's training session",
-]
+import { useTranslation } from 'react-i18next'
 
 interface EmptyChatStateProps {
   onPromptClick: (text: string) => void
 }
 
 export function EmptyChatState({ onPromptClick }: EmptyChatStateProps) {
+  const { t } = useTranslation()
+
+  const prompts = [
+    t('chat.chip1'),
+    t('chat.chip2'),
+    t('chat.chip3'),
+    t('chat.chip4'),
+    t('chat.chip5'),
+    t('chat.chip6'),
+  ]
+
   return (
     <VStack spacing={6} flex={1} justify="center" align="center" py={20} px={6}>
       <Flex
@@ -32,14 +33,14 @@ export function EmptyChatState({ onPromptClick }: EmptyChatStateProps) {
       </Flex>
       <VStack spacing={1}>
         <Text color="text.primary" fontSize="lg" fontWeight="semibold">
-          Welcome to your AI Coach
+          {t('chat.welcomeTitle')}
         </Text>
         <Text color="text.muted" fontSize="sm" textAlign="center" maxW="280px">
-          Ask anything about training, or try one of these:
+          {t('chat.welcomeSubtitle')}
         </Text>
       </VStack>
       <VStack spacing={3} w="100%" maxW="360px">
-        {SUGGESTED_PROMPTS.map((prompt) => (
+        {prompts.map((prompt) => (
           <Button
             key={prompt}
             variant="outline"

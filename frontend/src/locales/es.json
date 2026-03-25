@@ -46,5 +46,15 @@
     "saveFailed": "Error al guardar",
     "loadFailed": "Error al cargar el perfil.",
     "logout": "Cerrar sesión"
+  },
+  "chat": {
+    "welcomeTitle": "Bienvenido a tu Coach IA",
+    "welcomeSubtitle": "Pregunta lo que quieras sobre entrenamiento, o prueba una de estas:",
+    "chip1": "¿Qué puedes hacer como mi coach IA?",
+    "chip2": "¿Cómo rastrea mi puntuación ACWR el riesgo de lesión?",
+    "chip3": "¿Qué debo registrar después de cada sesión de entrenamiento?",
+    "chip4": "Estoy nervioso por mi primera sesión de sparring",
+    "chip5": "Explica qué hace un buen cross trasero",
+    "chip6": "Ayúdame a analizar la sesión de entrenamiento de hoy"
   }
 }

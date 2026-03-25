@@ -46,5 +46,15 @@
     "saveFailed": "Opslaan mislukt",
     "loadFailed": "Profiel laden mislukt.",
     "logout": "Uitloggen"
+  },
+  "chat": {
+    "welcomeTitle": "Welkom bij je AI Coach",
+    "welcomeSubtitle": "Vraag alles over training, of probeer een van deze:",
+    "chip1": "Wat kun je doen als mijn AI coach?",
+    "chip2": "Hoe volgt mijn ACWR-score het blessurerisico?",
+    "chip3": "Wat moet ik loggen na elke trainingssessie?",
+    "chip4": "Ik ben zenuwachtig voor mijn eerste sparringsessie",
+    "chip5": "Leg uit wat een goede achterste cross maakt",
+    "chip6": "Help me de training van vandaag nabespreken"
   }
 }

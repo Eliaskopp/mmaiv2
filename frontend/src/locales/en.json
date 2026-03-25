@@ -46,5 +46,15 @@
     "saveFailed": "Save failed",
     "loadFailed": "Failed to load profile.",
     "logout": "Log Out"
+  },
+  "chat": {
+    "welcomeTitle": "Welcome to your AI Coach",
+    "welcomeSubtitle": "Ask anything about training, or try one of these:",
+    "chip1": "What can you do as my AI coach?",
+    "chip2": "How does my ACWR score track injury risk?",
+    "chip3": "What should I log after each training session?",
+    "chip4": "I'm nervous about my first sparring session",
+    "chip5": "Break down what makes a good rear cross",
+    "chip6": "Help me debrief today's training session"
   }
 }

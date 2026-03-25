@@ -46,5 +46,15 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "loadFailed": "Profil konnte nicht geladen werden.",
     "logout": "Abmelden"
+  },
+  "chat": {
+    "welcomeTitle": "Willkommen bei deinem KI-Coach",
+    "welcomeSubtitle": "Frag alles zum Training, oder probiere eine davon:",
+    "chip1": "Was kannst du als mein KI-Coach tun?",
+    "chip2": "Wie verfolgt mein ACWR-Wert das Verletzungsrisiko?",
+    "chip3": "Was sollte ich nach jeder Trainingseinheit aufzeichnen?",
+    "chip4": "Ich bin nervös vor meiner ersten Sparringseinheit",
+    "chip5": "Erkläre, was einen guten Rückhand-Cross ausmacht",
+    "chip6": "Hilf mir, die heutige Trainingseinheit auszuwerten"
   }
 }
