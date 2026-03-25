@@ -11,6 +11,7 @@ import {
   Heading,
   Input,
   Progress,
+  Select,
   SimpleGrid,
   Spinner,
   Text,
@@ -18,6 +19,7 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
 import { useProfile, useCreateProfile, useUpdateProfile } from '../hooks/use-profile'
 import { ChoiceChipGroup } from '../components/ChoiceChipGroup'
 import { TagInput } from '../components/TagInput'
@@ -92,8 +94,8 @@ const EMPTY_DEFAULTS: ProfileUpdate = {
   language_code: 'en',
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'No sessions yet'
+function formatDate(dateStr: string | null, fallback: string): string {
+  if (!dateStr) return fallback
   return new Date(dateStr).toLocaleDateString()
 }
 
@@ -101,6 +103,7 @@ export function ProfilePage() {
   const toast = useToast()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { t, i18n } = useTranslation()
   const { data: profile, isLoading, isError, error } = useProfile()
   const createMutation = useCreateProfile()
   const updateMutation = useUpdateProfile()
@@ -155,7 +158,7 @@ export function ProfilePage() {
     mutation.mutate(cleaned, {
       onSuccess: (data: ProfileResponse) => {
         toast({
-          title: hasProfile ? 'Profile updated' : 'Profile created',
+          title: hasProfile ? t('profile.updated') : t('profile.created'),
           status: 'success',
           duration: 4000,
         })
@@ -165,7 +168,8 @@ export function ProfilePage() {
       },
       onError: (err) => {
         const message =
-          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Save failed'
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail ||
+          t('profile.saveFailed')
         toast({ title: message, status: 'error', duration: 4000 })
       },
     })
@@ -182,7 +186,7 @@ export function ProfilePage() {
   if (isError && !is404) {
     return (
       <Container maxW="container.md" py={6}>
-        <Text color="red.400">Failed to load profile.</Text>
+        <Text color="red.400">{t('profile.loadFailed')}</Text>
       </Container>
     )
   }
@@ -194,14 +198,14 @@ export function ProfilePage() {
 
   const isIncomplete = (profile?.profile_completeness ?? 0) <= 50
 
-  let pageHeading = 'Profile'
+  let pageHeading = t('profile.heading')
   let pageSubtext: string | null = null
   if (!hasProfile || (isOnboarding && is404)) {
-    pageHeading = 'Welcome!'
-    pageSubtext = 'Set up your training profile to get started.'
+    pageHeading = t('profile.welcome')
+    pageSubtext = t('profile.setupSubtext')
   } else if (isOnboarding || isIncomplete) {
-    pageHeading = 'Almost there'
-    pageSubtext = 'Fill in a few more details to unlock the coach.'
+    pageHeading = t('profile.almostThere')
+    pageSubtext = t('profile.unlockSubtext')
   }
 
   return (
@@ -225,7 +229,7 @@ export function ProfilePage() {
             letterSpacing="wide"
             mb={1}
           >
-            Profile Completeness
+            {t('profile.completeness')}
           </Text>
           <Box display="flex" alignItems="center" gap={3}>
             <Progress
@@ -264,7 +268,7 @@ export function ProfilePage() {
                   textTransform="uppercase"
                   letterSpacing="wide"
                 >
-                  Current Streak
+                  {t('profile.currentStreak')}
                 </Text>
               </Box>
               <Box>
@@ -282,7 +286,7 @@ export function ProfilePage() {
                   textTransform="uppercase"
                   letterSpacing="wide"
                 >
-                  Longest Streak
+                  {t('profile.longestStreak')}
                 </Text>
               </Box>
               <Box>
@@ -300,13 +304,14 @@ export function ProfilePage() {
                   textTransform="uppercase"
                   letterSpacing="wide"
                 >
-                  Grace Days
+                  {t('profile.graceDays')}
                 </Text>
               </Box>
             </SimpleGrid>
 
             <Text fontSize="sm" color="text.secondary">
-              Last Active: {formatDate(profile.last_active_date)}
+              {t('profile.lastActive')}:{' '}
+              {formatDate(profile.last_active_date, t('profile.noSessions'))}
             </Text>
           </>
         )}
@@ -318,11 +323,11 @@ export function ProfilePage() {
           {/* ── Experience ── */}
           <Box bg="bg.subtle" p={5} borderRadius="lg">
             <Text fontSize="md" fontWeight="semibold" color="text.primary" mb={4}>
-              Experience
+              {t('profile.experience')}
             </Text>
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel>Skill Level</FormLabel>
+                <FormLabel>{t('profile.skillLevel')}</FormLabel>
                 <Controller
                   name="skill_level"
                   control={control}
@@ -337,7 +342,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Martial Arts</FormLabel>
+                <FormLabel>{t('profile.martialArts')}</FormLabel>
                 <Controller
                   name="martial_arts"
                   control={control}
@@ -345,7 +350,7 @@ export function ProfilePage() {
                     <TagInput
                       value={field.value ?? []}
                       onChange={field.onChange}
-                      placeholder="e.g. Muay Thai, BJJ"
+                      placeholder={t('profile.martialArtsPlaceholder')}
                     />
                   )}
                 />
@@ -356,11 +361,11 @@ export function ProfilePage() {
           {/* ── Biometrics ── */}
           <Box bg="bg.subtle" p={5} borderRadius="lg">
             <Text fontSize="md" fontWeight="semibold" color="text.primary" mb={4}>
-              Biometrics
+              {t('profile.biometrics')}
             </Text>
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel>Weight Class</FormLabel>
+                <FormLabel>{t('profile.weightClass')}</FormLabel>
                 <Controller
                   name="weight_class"
                   control={control}
@@ -387,7 +392,7 @@ export function ProfilePage() {
                         <Input
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value)}
-                          placeholder="Enter weight class"
+                          placeholder={t('profile.enterWeightClass')}
                           maxLength={30}
                           size="sm"
                           autoFocus
@@ -398,7 +403,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Weight Unit</FormLabel>
+                <FormLabel>{t('profile.weightUnit')}</FormLabel>
                 <Controller
                   name="weight_unit"
                   control={control}
@@ -413,7 +418,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Injuries</FormLabel>
+                <FormLabel>{t('profile.injuries')}</FormLabel>
                 <Controller
                   name="injuries"
                   control={control}
@@ -421,7 +426,7 @@ export function ProfilePage() {
                     <TagInput
                       value={field.value ?? []}
                       onChange={field.onChange}
-                      placeholder="e.g. Left knee, Right shoulder"
+                      placeholder={t('profile.injuriesPlaceholder')}
                     />
                   )}
                 />
@@ -432,11 +437,11 @@ export function ProfilePage() {
           {/* ── Style ── */}
           <Box bg="bg.subtle" p={5} borderRadius="lg">
             <Text fontSize="md" fontWeight="semibold" color="text.primary" mb={4}>
-              Style
+              {t('profile.style')}
             </Text>
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel>Game Style</FormLabel>
+                <FormLabel>{t('profile.gameStyle')}</FormLabel>
                 <Controller
                   name="game_style"
                   control={control}
@@ -451,7 +456,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Strategic Leaks</FormLabel>
+                <FormLabel>{t('profile.strategicLeaks')}</FormLabel>
                 <Controller
                   name="strategic_leaks"
                   control={control}
@@ -459,7 +464,7 @@ export function ProfilePage() {
                     <TagInput
                       value={field.value ?? []}
                       onChange={field.onChange}
-                      placeholder="e.g. Dropping hands after jab"
+                      placeholder={t('profile.strategicLeaksPlaceholder')}
                     />
                   )}
                 />
@@ -470,11 +475,11 @@ export function ProfilePage() {
           {/* ── Goals & Preferences ── */}
           <Box bg="bg.subtle" p={5} borderRadius="lg">
             <Text fontSize="md" fontWeight="semibold" color="text.primary" mb={4}>
-              Goals & Preferences
+              {t('profile.goalsPrefs')}
             </Text>
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel>Role</FormLabel>
+                <FormLabel>{t('profile.role')}</FormLabel>
                 <Controller
                   name="role"
                   control={control}
@@ -489,7 +494,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Training Frequency</FormLabel>
+                <FormLabel>{t('profile.trainingFrequency')}</FormLabel>
                 <Controller
                   name="training_frequency"
                   control={control}
@@ -504,7 +509,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Primary Domain</FormLabel>
+                <FormLabel>{t('profile.primaryDomain')}</FormLabel>
                 <Controller
                   name="primary_domain"
                   control={control}
@@ -519,7 +524,7 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Goals</FormLabel>
+                <FormLabel>{t('profile.goals')}</FormLabel>
                 <Controller
                   name="goals"
                   control={control}
@@ -527,7 +532,7 @@ export function ProfilePage() {
                     <Textarea
                       {...field}
                       value={field.value ?? ''}
-                      placeholder="What are you working towards?"
+                      placeholder={t('profile.goalsPlaceholder')}
                       maxLength={2000}
                       size="sm"
                       rows={4}
@@ -536,18 +541,22 @@ export function ProfilePage() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Language Code</FormLabel>
+                <FormLabel>{t('profile.language')}</FormLabel>
                 <Controller
                   name="language_code"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      {...field}
-                      value={field.value ?? ''}
-                      placeholder="en"
-                      maxLength={10}
+                    <Select
+                      value={field.value ?? 'en'}
+                      onChange={(e) => {
+                        field.onChange(e.target.value)
+                        i18n.changeLanguage(e.target.value)
+                      }}
                       size="sm"
-                    />
+                    >
+                      <option value="en">English</option>
+                      <option value="nl">Nederlands</option>
+                    </Select>
                   )}
                 />
               </FormControl>
@@ -556,7 +565,7 @@ export function ProfilePage() {
 
           {/* Save */}
           <Button type="submit" colorScheme="brand" width="full" isLoading={isPending} size="lg">
-            {hasProfile ? 'Save Changes' : 'Create Profile'}
+            {hasProfile ? t('profile.save') : t('profile.create')}
           </Button>
         </VStack>
       </Box>
