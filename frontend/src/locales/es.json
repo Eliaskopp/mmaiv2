@@ -44,6 +44,7 @@
     "updated": "Perfil actualizado",
     "created": "Perfil creado",
     "saveFailed": "Error al guardar",
-    "loadFailed": "Error al cargar el perfil."
+    "loadFailed": "Error al cargar el perfil.",
+    "logout": "Cerrar sesión"
   }
 }
