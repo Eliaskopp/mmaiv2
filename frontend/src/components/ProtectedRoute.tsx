@@ -10,7 +10,15 @@ const PROFILE_COMPLETENESS_THRESHOLD = 50
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const location = useLocation()
-  const { data: profile, isLoading: profileLoading, isError, error } = useProfile()
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError,
+    error,
+  } = useProfile({
+    enabled: isAuthenticated && !!user?.is_verified,
+    retry: false,
+  })
 
   if (authLoading) {
     return (
