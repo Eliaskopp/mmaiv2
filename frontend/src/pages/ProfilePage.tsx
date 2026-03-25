@@ -556,6 +556,9 @@ export function ProfilePage() {
                     >
                       <option value="en">English</option>
                       <option value="nl">Nederlands</option>
+                      <option value="es">Español</option>
+                      <option value="de">Deutsch</option>
+                      <option value="th">ไทย</option>
                     </Select>
                   )}
                 />
