@@ -20,6 +20,7 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../contexts/AuthContext'
 import { useProfile, useCreateProfile, useUpdateProfile } from '../hooks/use-profile'
 import { ChoiceChipGroup } from '../components/ChoiceChipGroup'
 import { TagInput } from '../components/TagInput'
@@ -104,6 +105,7 @@ export function ProfilePage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { t, i18n } = useTranslation()
+  const { logout } = useAuth()
   const { data: profile, isLoading, isError, error } = useProfile()
   const createMutation = useCreateProfile()
   const updateMutation = useUpdateProfile()
@@ -556,6 +558,9 @@ export function ProfilePage() {
                     >
                       <option value="en">English</option>
                       <option value="nl">Nederlands</option>
+                      <option value="es">Español</option>
+                      <option value="de">Deutsch</option>
+                      <option value="th">ไทย</option>
                     </Select>
                   )}
                 />
@@ -566,6 +571,19 @@ export function ProfilePage() {
           {/* Save */}
           <Button type="submit" colorScheme="brand" width="full" isLoading={isPending} size="lg">
             {hasProfile ? t('profile.save') : t('profile.create')}
+          </Button>
+
+          <Button
+            variant="outline"
+            colorPalette="red"
+            width="full"
+            size="lg"
+            onClick={() => {
+              logout()
+              navigate('/login')
+            }}
+          >
+            {t('profile.logout')}
           </Button>
         </VStack>
       </Box>

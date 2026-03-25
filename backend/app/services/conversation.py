@@ -15,6 +15,14 @@ from app.prompts.coach import COACH_SYSTEM_PROMPT
 from app.services.grok import GrokClient
 from app.services import usage as usage_service
 
+LANGUAGE_NAMES: dict[str, str] = {
+    "en": "English",
+    "nl": "Dutch",
+    "de": "German",
+    "es": "Spanish",
+    "th": "Thai",
+}
+
 
 async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
     """Build a dynamic system prompt from the user's profile and today's recovery log.
@@ -26,10 +34,12 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
     from app.services import memory as memory_service
 
     context_lines: list[str] = []
+    lang = "en"
 
     # Fetch profile — catch 404 gracefully
     try:
         profile = await profile_service.get_profile(db, user_id)
+        lang = profile.language_code or "en"
         profile_parts: list[str] = []
         if profile.skill_level:
             profile_parts.append(f"Skill level: {profile.skill_level}")
@@ -149,7 +159,18 @@ async def _build_system_prompt(db: AsyncSession, user_id: uuid.UUID) -> str:
         logger.warning("Failed to fetch memory telemetry for user=%s", user_id, exc_info=True)
 
     athlete_context = "\n".join(context_lines) if context_lines else "No profile or recovery data available."
-    return COACH_SYSTEM_PROMPT.replace("{athlete_context}", athlete_context)
+    prompt = COACH_SYSTEM_PROMPT.replace("{athlete_context}", athlete_context)
+
+    # Inject language instruction for non-English users
+    if lang != "en":
+        lang_name = LANGUAGE_NAMES.get(lang, lang)
+        prompt += (
+            f"\n\n## LANGUAGE\n\n"
+            f"Always respond in {lang_name}. Use {lang_name} for all coaching responses. "
+            f"Technical martial arts terms can remain in English where no good translation exists."
+        )
+
+    return prompt
 
 
 async def create_conversation(

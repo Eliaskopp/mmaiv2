@@ -44,6 +44,7 @@
     "updated": "Profile updated",
     "created": "Profile created",
     "saveFailed": "Save failed",
-    "loadFailed": "Failed to load profile."
+    "loadFailed": "Failed to load profile.",
+    "logout": "Log Out"
   }
 }

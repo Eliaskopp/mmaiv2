@@ -44,6 +44,7 @@
     "updated": "Profiel bijgewerkt",
     "created": "Profiel aangemaakt",
     "saveFailed": "Opslaan mislukt",
-    "loadFailed": "Profiel laden mislukt."
+    "loadFailed": "Profiel laden mislukt.",
+    "logout": "Uitloggen"
   }
 }

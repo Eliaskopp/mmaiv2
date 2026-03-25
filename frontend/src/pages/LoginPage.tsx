@@ -55,11 +55,14 @@ export function LoginPage() {
           <Select
             size="sm"
             w="120px"
-            value={i18n.language.startsWith('nl') ? 'nl' : 'en'}
+            value={i18n.language.substring(0, 2)}
             onChange={(e) => i18n.changeLanguage(e.target.value)}
           >
             <option value="en">English</option>
             <option value="nl">Nederlands</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            <option value="th">ไทย</option>
           </Select>
         </Box>
         <Image src="/logo.png" alt="MMAi" h="64px" mx="auto" />
