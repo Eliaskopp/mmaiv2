@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
   Box,
@@ -17,7 +17,7 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Heart } from 'lucide-react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { ChoiceChipGroup } from '../components/ChoiceChipGroup'
 import { useRecoveryLog, useUpsertRecoveryLog } from '../hooks/use-recovery'
@@ -101,15 +101,24 @@ export function RecoveryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const selectedDate = searchParams.get('date') || todayISO()
+  const [showForm, setShowForm] = useState(false)
 
   function setSelectedDate(next: string | ((prev: string) => string)) {
-    setSearchParams((prev) => {
-      const current = prev.get('date') || todayISO()
-      const value = typeof next === 'function' ? next(current) : next
-      const params = new URLSearchParams(prev)
-      if (value === todayISO()) { params.delete('date') } else { params.set('date', value) }
-      return params
-    }, { replace: true })
+    setShowForm(false)
+    setSearchParams(
+      (prev) => {
+        const current = prev.get('date') || todayISO()
+        const value = typeof next === 'function' ? next(current) : next
+        const params = new URLSearchParams(prev)
+        if (value === todayISO()) {
+          params.delete('date')
+        } else {
+          params.set('date', value)
+        }
+        return params
+      },
+      { replace: true },
+    )
   }
 
   useEffect(() => {
@@ -159,7 +168,8 @@ export function RecoveryPage() {
         })
       },
       onError: (err) => {
-        const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Save failed'
+        const msg =
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Save failed'
         toast({ title: msg, status: 'error', duration: 4000 })
       },
     })
@@ -172,9 +182,11 @@ export function RecoveryPage() {
         <HStack justify="center" spacing={3}>
           <IconButton
             aria-label="Previous day"
-            icon={<ChevronLeft size={20} />}
+            icon={<ChevronLeft size={22} />}
             variant="ghost"
             size="sm"
+            minH="44px"
+            minW="44px"
             onClick={() => setSelectedDate((d) => shiftDate(d, -1))}
           />
           <Text fontWeight="semibold" color="text.primary" minW="160px" textAlign="center">
@@ -182,9 +194,11 @@ export function RecoveryPage() {
           </Text>
           <IconButton
             aria-label="Next day"
-            icon={<ChevronRight size={20} />}
+            icon={<ChevronRight size={22} />}
             variant="ghost"
             size="sm"
+            minH="44px"
+            minW="44px"
             isDisabled={selectedDate === todayISO()}
             onClick={() => setSelectedDate((d) => shiftDate(d, 1))}
           />
@@ -196,107 +210,129 @@ export function RecoveryPage() {
           </Text>
         )}
 
+        {/* Empty state — no log for this date */}
+        {is404 && !showForm && (
+          <Box bg="bg.subtle" p={8} borderRadius="lg" textAlign="center">
+            <Box as={Heart} size={40} color="text.muted" mx="auto" mb={4} />
+            <Text fontSize="lg" fontWeight="bold" color="text.primary" mb={2}>
+              No recovery log for {formatDateLabel(selectedDate)}
+            </Text>
+            <Text fontSize="sm" color="text.muted" mb={6}>
+              Track your sleep, stress, and soreness to unlock recovery insights.
+            </Text>
+            <Button colorScheme="brand" size="lg" onClick={() => setShowForm(true)}>
+              {selectedDate === todayISO()
+                ? "Log Today's Recovery"
+                : `Log Recovery for ${formatDateLabel(selectedDate)}`}
+            </Button>
+          </Box>
+        )}
+
         {/* Wellness Survey Card */}
-        <Box
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
-          bg="bg.subtle"
-          p={5}
-          borderRadius="lg"
-        >
-          <VStack spacing={5} align="stretch">
-            {/* Sleep Quality — Slider */}
-            <FormControl>
-              <FormLabel fontSize="sm">Sleep Quality</FormLabel>
-              <Controller
-                name="sleep_quality"
-                control={control}
-                render={({ field }) => (
-                  <Box px={2}>
-                    <Slider
-                      min={1}
-                      max={5}
-                      step={1}
+        {(isEditing || showForm || (!is404 && !isRealError)) && (
+          <Box as="form" onSubmit={handleSubmit(onSubmit)} bg="bg.subtle" p={5} borderRadius="lg">
+            <VStack spacing={5} align="stretch">
+              {/* Sleep Quality — Slider */}
+              <FormControl>
+                <FormLabel fontSize="sm">Sleep Quality</FormLabel>
+                <Controller
+                  name="sleep_quality"
+                  control={control}
+                  render={({ field }) => (
+                    <Box px={2}>
+                      <Slider
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={field.value}
+                        onChange={field.onChange}
+                        aria-label="Sleep Quality"
+                        aria-valuetext={SLEEP_LABELS[field.value]}
+                      >
+                        <SliderTrack>
+                          <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />
+                        </SliderTrack>
+                        <SliderThumb boxSize={6} />
+                      </Slider>
+                      <Text
+                        fontSize="sm"
+                        color="text.secondary"
+                        mt={1}
+                        textAlign="center"
+                        sx={{ fontVariantNumeric: 'tabular-nums' }}
+                      >
+                        {field.value} — {SLEEP_LABELS[field.value]}
+                      </Text>
+                    </Box>
+                  )}
+                />
+              </FormControl>
+
+              {/* Soreness — ChoiceChipGroup */}
+              <FormControl>
+                <FormLabel fontSize="sm">Soreness</FormLabel>
+                <Controller
+                  name="soreness"
+                  control={control}
+                  render={({ field }) => (
+                    <ChoiceChipGroup
+                      options={SORENESS_OPTIONS}
                       value={field.value}
                       onChange={field.onChange}
-                    >
-                      <SliderTrack>
-                        <SliderFilledTrack bg={SLEEP_COLORS[field.value]} />
-                      </SliderTrack>
-                      <SliderThumb boxSize={6} />
-                    </Slider>
-                    <Text fontSize="sm" color="text.secondary" mt={1} textAlign="center">
-                      {field.value} — {SLEEP_LABELS[field.value]}
-                    </Text>
-                  </Box>
-                )}
-              />
-            </FormControl>
+                      columns={5}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Soreness — ChoiceChipGroup */}
-            <FormControl>
-              <FormLabel fontSize="sm">Soreness</FormLabel>
-              <Controller
-                name="soreness"
-                control={control}
-                render={({ field }) => (
-                  <ChoiceChipGroup
-                    options={SORENESS_OPTIONS}
-                    value={field.value}
-                    onChange={field.onChange}
-                    columns={5}
-                  />
-                )}
-              />
-            </FormControl>
+              {/* Energy — ChoiceChipGroup */}
+              <FormControl>
+                <FormLabel fontSize="sm">Energy</FormLabel>
+                <Controller
+                  name="energy"
+                  control={control}
+                  render={({ field }) => (
+                    <ChoiceChipGroup
+                      options={ENERGY_OPTIONS}
+                      value={field.value}
+                      onChange={field.onChange}
+                      columns={5}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Energy — ChoiceChipGroup */}
-            <FormControl>
-              <FormLabel fontSize="sm">Energy</FormLabel>
-              <Controller
-                name="energy"
-                control={control}
-                render={({ field }) => (
-                  <ChoiceChipGroup
-                    options={ENERGY_OPTIONS}
-                    value={field.value}
-                    onChange={field.onChange}
-                    columns={5}
-                  />
-                )}
-              />
-            </FormControl>
+              {/* Notes — Textarea */}
+              <FormControl>
+                <FormLabel fontSize="sm">Notes</FormLabel>
+                <Controller
+                  name="notes"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      placeholder="How are you feeling today?"
+                      maxLength={2000}
+                      size="sm"
+                      rows={3}
+                    />
+                  )}
+                />
+              </FormControl>
 
-            {/* Notes — Textarea */}
-            <FormControl>
-              <FormLabel fontSize="sm">Notes</FormLabel>
-              <Controller
-                name="notes"
-                control={control}
-                render={({ field }) => (
-                  <Textarea
-                    {...field}
-                    placeholder="How are you feeling today?"
-                    maxLength={2000}
-                    size="sm"
-                    rows={3}
-                  />
-                )}
-              />
-            </FormControl>
-
-            {/* Save Button */}
-            <Button
-              type="submit"
-              colorScheme="brand"
-              size="lg"
-              width="full"
-              isLoading={upsertMutation.isPending}
-            >
-              {isEditing ? 'Update Log' : 'Save Log'}
-            </Button>
-          </VStack>
-        </Box>
+              {/* Save Button */}
+              <Button
+                type="submit"
+                colorScheme="brand"
+                size="lg"
+                width="full"
+                isLoading={upsertMutation.isPending}
+              >
+                {isEditing ? 'Update Log' : 'Save Log'}
+              </Button>
+            </VStack>
+          </Box>
+        )}
       </VStack>
     </Container>
   )

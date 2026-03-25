@@ -8,10 +8,7 @@ import type {
   MessageListResponse,
 } from '../types'
 
-export async function getConversations(
-  offset = 0,
-  limit = 20,
-): Promise<ConversationListResponse> {
+export async function getConversations(offset = 0, limit = 20): Promise<ConversationListResponse> {
   const { data } = await apiClient.get<ConversationListResponse>('/conversations', {
     params: { offset, limit },
   })

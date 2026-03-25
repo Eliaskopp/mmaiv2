@@ -37,6 +37,7 @@ function MenuItem({ icon, label, onClick }: MenuItemProps) {
         h="32px"
         borderRadius="lg"
         bg="brand.subtle"
+        color="brand.primary"
         flexShrink={0}
       >
         {icon}
@@ -59,12 +60,7 @@ export function FloatingActionMenu({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <Box
-            position="fixed"
-            inset={0}
-            zIndex="popover"
-            onClick={onClose}
-          />
+          <Box position="fixed" inset={0} zIndex="popover" onClick={onClose} />
           {/* Menu */}
           <MotionBox
             position="absolute"
@@ -78,14 +74,14 @@ export function FloatingActionMenu({
             borderColor="bg.panel"
             py={2}
             minW="200px"
-            boxShadow="0 8px 32px rgba(0,0,0,0.4)"
+            boxShadow="dark-lg"
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
           >
             <MenuItem
-              icon={<Dumbbell size={16} color="#FF6B35" />}
+              icon={<Dumbbell size={16} color="currentColor" />}
               label="Log Session"
               onClick={() => {
                 onClose()
@@ -93,7 +89,7 @@ export function FloatingActionMenu({
               }}
             />
             <MenuItem
-              icon={<StickyNote size={16} color="#FF6B35" />}
+              icon={<StickyNote size={16} color="currentColor" />}
               label="Attach Note"
               onClick={() => {
                 onClose()

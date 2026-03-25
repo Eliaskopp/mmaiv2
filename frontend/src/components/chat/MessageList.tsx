@@ -3,17 +3,18 @@ import { Center, Flex, Spinner, Text, VStack } from '@chakra-ui/react'
 import { MessageCircle } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
-import type { MessageResponse } from '../../types'
+import type { ChatMessage } from '../../types'
 import type { Citation } from './CitationBadge'
 
 interface MessageListProps {
-  messages: MessageResponse[]
+  messages: ChatMessage[]
   isLoading: boolean
   isPending: boolean
   isAtBottom: boolean
   scrollToBottom: () => void
   anchorRef: (node: HTMLDivElement | null) => void
   onCitationClick?: (citation: Citation) => void
+  onRetry?: (message: ChatMessage) => void
 }
 
 export function MessageList({
@@ -24,6 +25,7 @@ export function MessageList({
   scrollToBottom,
   anchorRef,
   onCitationClick,
+  onRetry,
 }: MessageListProps) {
   // Auto-scroll when new messages arrive, but only if already at bottom
   useEffect(() => {
@@ -50,8 +52,9 @@ export function MessageList({
           h="64px"
           borderRadius="full"
           bg="brand.subtle"
+          color="brand.primary"
         >
-          <MessageCircle size={32} color="#FF6B35" />
+          <MessageCircle size={32} color="currentColor" />
         </Flex>
         <Text color="text.secondary" fontSize="lg" fontWeight="medium">
           Start a conversation
@@ -68,12 +71,9 @@ export function MessageList({
       {messages.map((msg) => (
         <MessageBubble
           key={msg.id}
-          role={msg.role}
-          content={msg.content}
-          createdAt={msg.created_at}
-          isOptimistic={msg.id.startsWith('optimistic-')}
-          metadata={msg.metadata_}
+          message={msg}
           onCitationClick={onCitationClick}
+          onRetry={msg.status === 'error' ? onRetry : undefined}
         />
       ))}
       {isPending && <TypingIndicator />}

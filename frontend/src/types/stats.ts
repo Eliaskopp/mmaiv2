@@ -3,6 +3,8 @@ export interface ACWRResponse {
   chronic_load: number
   acwr_ratio: number | null
   risk_zone: string
+  is_calibrating: boolean
+  session_count: number
 }
 
 export interface DailyVolumePoint {

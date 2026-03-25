@@ -130,40 +130,37 @@ async def test_logout(client: AsyncClient):
     assert resp.json()["message"] == "Logged out successfully"
 
 
-# ── Verify Email ──────────────────────────────────────────────────────────────
+# ── Verify Email (OTP) ────────────────────────────────────────────────────────
+# Full OTP verification test suite lives in test_email_verification.py.
+# These tests cover basic contract validation only.
 
 @pytest.mark.asyncio
-async def test_verify_email_invalid_token(client: AsyncClient):
-    resp = await client.post("/api/v1/auth/verify-email", json={"token": "invalid-token"})
+async def test_verify_email_invalid_code(client: AsyncClient):
+    await _register(client, "verify-invalid@example.com")
+    resp = await client.post("/api/v1/auth/verify-email", json={
+        "email": "verify-invalid@example.com",
+        "code": "000000",
+    })
     assert resp.status_code == 400
 
 
 @pytest.mark.asyncio
-async def test_verify_email_valid_token(client: AsyncClient):
-    await _register(client, "verify@example.com")
-    token = await db_fetchval(
-        "SELECT verification_token FROM users WHERE email = $1", "verify@example.com"
-    )
-    resp = await client.post("/api/v1/auth/verify-email", json={"token": token})
-    assert resp.status_code == 200
-    assert resp.json()["message"] == "Email verified successfully"
-    is_verified = await db_fetchval(
-        "SELECT is_verified FROM users WHERE email = $1", "verify@example.com"
-    )
-    assert is_verified is True
+async def test_verify_email_missing_fields(client: AsyncClient):
+    resp = await client.post("/api/v1/auth/verify-email", json={"token": "old-format"})
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_verify_email_expired_token(client: AsyncClient):
+async def test_verify_email_expired_code(client: AsyncClient):
     await _register(client, "expired@example.com")
     await db_execute(
-        "UPDATE users SET verification_sent_at = NOW() - INTERVAL '49 hours' WHERE email = $1",
+        "UPDATE users SET verification_sent_at = NOW() - INTERVAL '11 minutes' WHERE email = $1",
         "expired@example.com",
     )
-    token = await db_fetchval(
-        "SELECT verification_token FROM users WHERE email = $1", "expired@example.com"
-    )
-    resp = await client.post("/api/v1/auth/verify-email", json={"token": token})
+    resp = await client.post("/api/v1/auth/verify-email", json={
+        "email": "expired@example.com",
+        "code": "123456",
+    })
     assert resp.status_code == 400
     assert "expired" in resp.json()["detail"].lower()
 

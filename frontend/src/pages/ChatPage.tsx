@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import {
+  Alert,
+  AlertIcon,
   Center,
   Drawer,
   DrawerBody,
@@ -13,20 +15,17 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import {
-  useConversations,
-  useMessages,
-  useSendMessage,
-} from '../hooks/use-conversations'
+import { useConversations, useMessages, useSendMessage } from '../hooks/use-conversations'
 import { useScrollAnchor } from '../hooks/use-scroll-anchor'
 import { createConversation } from '../services/conversations'
 import { MessageList } from '../components/chat/MessageList'
 import { ChatInput } from '../components/chat/ChatInput'
 import { ScrollToBottomButton } from '../components/chat/ScrollToBottomButton'
 import { CitationDrawer } from '../components/chat/CitationDrawer'
+import { EmptyChatState } from '../components/chat/EmptyChatState'
 import { SessionForm } from '../components/journal/SessionForm'
 import type { Citation } from '../components/chat/CitationBadge'
-import type { LayoutOutletContext } from '../types'
+import type { ChatMessage, LayoutOutletContext } from '../types'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
 
@@ -49,6 +48,9 @@ export function ChatPage() {
   // Session drawer (FAM → Log Session)
   const sessionDrawer = useDisclosure()
 
+  // Quota exceeded state
+  const [quotaExceeded, setQuotaExceeded] = useState(false)
+
   function handleCitationClick(citation: Citation) {
     setActiveCitation(citation)
     citationDrawer.onOpen()
@@ -68,7 +70,7 @@ export function ChatPage() {
         const message = axiosErr?.response?.data?.detail || 'Failed to start conversation'
         toast({ title: message, status: 'error', duration: 4000 })
       })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId])
 
   // Fetch messages for the current conversation
@@ -100,21 +102,25 @@ export function ChatPage() {
       { conversationId, content },
       {
         onError: (err) => {
-          const axiosErr = err as AxiosError<{ detail?: string; error?: string }>
-          const status = axiosErr?.response?.status
-          const detail = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.error
-          if (status === 429) {
-            toast({
-              title: detail || 'Rate limit reached. Please wait a moment.',
-              status: 'warning',
-              duration: 5000,
-            })
-          } else {
-            toast({
-              title: detail || 'Failed to send message',
-              status: 'error',
-              duration: 4000,
-            })
+          const axiosErr = err as AxiosError
+          if (axiosErr?.response?.status === 429) {
+            setQuotaExceeded(true)
+          }
+        },
+      },
+    )
+  }
+
+  // Handle retry on failed message
+  function handleRetry(message: ChatMessage) {
+    if (!conversationId) return
+    sendMessage.mutate(
+      { conversationId, content: message.content, retryId: message.id },
+      {
+        onError: (err) => {
+          const axiosErr = err as AxiosError
+          if (axiosErr?.response?.status === 429) {
+            setQuotaExceeded(true)
           }
         },
       },
@@ -132,17 +138,31 @@ export function ChatPage() {
 
   const messages = messageData?.items ?? []
 
+  const isEmpty = messages.length === 0 && !messagesLoading && !sendMessage.isPending
+
   return (
     <Flex direction="column" flex={1}>
-      <MessageList
-        messages={messages}
-        isLoading={messagesLoading}
-        isPending={sendMessage.isPending}
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-        anchorRef={anchorRef}
-        onCitationClick={handleCitationClick}
-      />
+      {quotaExceeded && (
+        <Alert status="warning" variant="subtle" borderRadius={0}>
+          <AlertIcon />
+          Daily AI message quota reached. Please try again tomorrow.
+        </Alert>
+      )}
+
+      {isEmpty ? (
+        <EmptyChatState onPromptClick={handleSend} />
+      ) : (
+        <MessageList
+          messages={messages}
+          isLoading={messagesLoading}
+          isPending={sendMessage.isPending}
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+          anchorRef={anchorRef}
+          onCitationClick={handleCitationClick}
+          onRetry={handleRetry}
+        />
+      )}
 
       <ScrollToBottomButton
         isVisible={!isAtBottom && messages.length > 0}
@@ -151,7 +171,7 @@ export function ChatPage() {
 
       <ChatInput
         onSend={handleSend}
-        isDisabled={sendMessage.isPending}
+        isDisabled={quotaExceeded || sendMessage.isPending}
         onLogSession={sessionDrawer.onOpen}
         onAttachNote={() => toast({ title: 'Notes coming soon', status: 'info', duration: 2000 })}
       />
@@ -162,11 +182,7 @@ export function ChatPage() {
         onClose={citationDrawer.onClose}
       />
 
-      <Drawer
-        isOpen={sessionDrawer.isOpen}
-        onClose={sessionDrawer.onClose}
-        placement="bottom"
-      >
+      <Drawer isOpen={sessionDrawer.isOpen} onClose={sessionDrawer.onClose} placement="bottom">
         <DrawerOverlay />
         <DrawerContent bg="bg.muted" borderTopRadius="xl" maxH="50vh">
           <DrawerCloseButton color="text.secondary" />

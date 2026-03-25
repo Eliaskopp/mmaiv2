@@ -1,4 +1,5 @@
-import { Box, Center, Skeleton, Text, VStack } from '@chakra-ui/react'
+import type { RefObject } from 'react'
+import { Box, Center, Skeleton, Spinner, Text, VStack } from '@chakra-ui/react'
 import { BookOpen } from 'lucide-react'
 import { SessionCard } from './SessionCard'
 import { groupSessionsByDate } from './session-utils'
@@ -9,9 +10,20 @@ interface JournalListProps {
   isLoading: boolean
   onEdit: (session: SessionResponse) => void
   onDelete: (id: string) => void
+  sentinelRef?: RefObject<HTMLDivElement | null>
+  isFetchingNextPage?: boolean
+  hasNextPage?: boolean
 }
 
-export function JournalList({ sessions, isLoading, onEdit, onDelete }: JournalListProps) {
+export function JournalList({
+  sessions,
+  isLoading,
+  onEdit,
+  onDelete,
+  sentinelRef,
+  isFetchingNextPage,
+  hasNextPage,
+}: JournalListProps) {
   if (isLoading) {
     return (
       <VStack spacing={3} align="stretch">
@@ -59,16 +71,24 @@ export function JournalList({ sessions, isLoading, onEdit, onDelete }: JournalLi
           </Text>
           <VStack spacing={2} align="stretch">
             {group.sessions.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
+              <SessionCard key={session.id} session={session} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </VStack>
         </Box>
       ))}
+
+      {/* Infinite scroll sentinel + status */}
+      {isFetchingNextPage && (
+        <Center py={4}>
+          <Spinner size="sm" color="text.muted" />
+        </Center>
+      )}
+      {!hasNextPage && sessions.length > 0 && (
+        <Text fontSize="xs" color="text.muted" textAlign="center" py={4}>
+          No more sessions
+        </Text>
+      )}
+      <div ref={sentinelRef} aria-hidden="true" />
     </VStack>
   )
 }

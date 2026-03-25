@@ -1,11 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  getNotes,
-  getNote,
-  createNote,
-  updateNote,
-  deleteNote,
-} from '../services/notes'
+import { getNotes, getNote, createNote, updateNote, deleteNote } from '../services/notes'
 import type { NoteFilters } from '../services/notes'
 import type { NoteCreate, NoteUpdate } from '../types'
 

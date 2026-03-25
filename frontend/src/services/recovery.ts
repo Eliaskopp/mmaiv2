@@ -8,7 +8,9 @@ export interface RecoveryLogFilters {
   date_to?: string
 }
 
-export async function getRecoveryLogs(filters?: RecoveryLogFilters): Promise<RecoveryLogListResponse> {
+export async function getRecoveryLogs(
+  filters?: RecoveryLogFilters,
+): Promise<RecoveryLogListResponse> {
   const { data } = await apiClient.get<RecoveryLogListResponse>('/recovery/logs', {
     params: filters,
   })

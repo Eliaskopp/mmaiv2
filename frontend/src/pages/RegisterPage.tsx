@@ -6,7 +6,7 @@ import {
   Container,
   FormControl,
   FormLabel,
-  Heading,
+  Image,
   Input,
   Text,
   VStack,
@@ -32,10 +32,9 @@ export function RegisterPage() {
     setIsSubmitting(true)
     try {
       await register(email, password, displayName)
-      navigate('/chat', { replace: true })
+      navigate('/verify-email', { replace: true })
     } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       const message = typeof detail === 'string' ? detail : 'Registration failed'
       toast({ title: message, status: 'error', duration: 4000 })
     } finally {
@@ -46,7 +45,7 @@ export function RegisterPage() {
   return (
     <Container maxW="sm" py={20}>
       <VStack spacing={6} align="stretch">
-        <Heading textAlign="center">Create Account</Heading>
+        <Image src="/logo.png" alt="MMAi" h="64px" mx="auto" />
         <Box as="form" onSubmit={handleSubmit}>
           <VStack spacing={4}>
             <FormControl isRequired>
@@ -73,22 +72,18 @@ export function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength={8}
+                maxLength={128}
                 autoComplete="new-password"
               />
             </FormControl>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              width="full"
-              isLoading={isSubmitting}
-            >
+            <Button type="submit" colorScheme="brand" width="full" isLoading={isSubmitting}>
               Register
             </Button>
           </VStack>
         </Box>
         <Text textAlign="center" fontSize="sm">
           Already have an account?{' '}
-          <Text as={Link} to="/login" color="blue.500" fontWeight="medium">
+          <Text as={Link} to="/login" color="brand.primary" fontWeight="medium">
             Sign In
           </Text>
         </Text>

@@ -1,17 +1,10 @@
-import { Box, Text } from '@chakra-ui/react'
+import { Box, Text, useToken } from '@chakra-ui/react'
 
 interface RiskGaugeProps {
   ratio: number | null
   size?: number
+  isCalibrating?: boolean
 }
-
-// Zone boundaries on the 0–2.0 scale
-const ZONES = [
-  { from: 0, to: 0.8, color: '#60A5FA' },   // low — accent blue
-  { from: 0.8, to: 1.3, color: '#22C55E' },  // optimal — green
-  { from: 1.3, to: 1.5, color: '#FB923C' },  // high — orange
-  { from: 1.5, to: 2.0, color: '#EF4444' },  // very high — red
-]
 
 const MAX_RATIO = 2.0
 const CX = 110
@@ -45,7 +38,21 @@ function arcPath(startRatio: number, endRatio: number): string {
   return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 0 1 ${end.x} ${end.y}`
 }
 
-export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
+export function RiskGauge({ ratio, size = 200, isCalibrating }: RiskGaugeProps) {
+  const [accentBlue, green400, orange400, red500] = useToken('colors', [
+    'accent.blue',
+    'green.400',
+    'orange.400',
+    'red.500',
+  ])
+
+  const ZONES = [
+    { from: 0, to: 0.8, color: accentBlue }, // low
+    { from: 0.8, to: 1.3, color: green400 }, // optimal
+    { from: 1.3, to: 1.5, color: orange400 }, // high
+    { from: 1.5, to: 2.0, color: red500 }, // very high
+  ]
+
   const effectiveRatio = ratio ?? 0
   const needleAngle = ratioToAngle(effectiveRatio)
   const needleTip = pointOnArc(needleAngle)
@@ -57,6 +64,8 @@ export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
     y: CY - needleBaseLen * Math.sin(needleAngle),
   }
 
+  const gaugeOpacity = isCalibrating ? 0.3 : 0.85
+
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <svg
@@ -64,7 +73,13 @@ export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
         width="100%"
         style={{ maxWidth: size }}
         role="img"
-        aria-label={ratio != null ? `ACWR risk gauge: ${ratio.toFixed(2)}` : 'ACWR risk gauge: no data'}
+        aria-label={
+          isCalibrating
+            ? 'ACWR risk gauge: calibrating'
+            : ratio != null
+              ? `ACWR risk gauge: ${ratio.toFixed(2)}`
+              : 'ACWR risk gauge: no data'
+        }
       >
         {/* Zone arcs */}
         {ZONES.map((zone) => (
@@ -72,31 +87,35 @@ export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
             key={zone.from}
             d={arcPath(zone.from, zone.to)}
             fill="none"
-            stroke={zone.color}
+            stroke={isCalibrating ? 'rgba(255,255,255,0.2)' : zone.color}
             strokeWidth={STROKE_WIDTH}
             strokeLinecap="butt"
-            opacity={0.85}
+            opacity={gaugeOpacity}
           />
         ))}
 
         {/* Needle line */}
-        <line
-          x1={needleBase.x}
-          y1={needleBase.y}
-          x2={needleTip.x}
-          y2={needleTip.y}
-          stroke={ratio != null ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
-          strokeWidth={2.5}
-          strokeLinecap="round"
-        />
+        {!isCalibrating && (
+          <line
+            x1={needleBase.x}
+            y1={needleBase.y}
+            x2={needleTip.x}
+            y2={needleTip.y}
+            stroke={ratio != null ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
+        )}
 
         {/* Needle tip dot */}
-        <circle
-          cx={needleTip.x}
-          cy={needleTip.y}
-          r={4}
-          fill={ratio != null ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
-        />
+        {!isCalibrating && (
+          <circle
+            cx={needleTip.x}
+            cy={needleTip.y}
+            r={4}
+            fill={ratio != null ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
+          />
+        )}
 
         {/* Center pivot dot */}
         <circle cx={CX} cy={CY} r={5} fill="rgba(255,255,255,0.6)" />
@@ -106,22 +125,37 @@ export function RiskGauge({ ratio, size = 200 }: RiskGaugeProps) {
           x={CX}
           y={CY - 20}
           textAnchor="middle"
-          fill="rgba(255,255,255,0.9)"
-          fontSize="24"
+          fill={isCalibrating ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.9)'}
+          fontSize={isCalibrating ? '14' : '24'}
           fontWeight="bold"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
-          {ratio != null ? ratio.toFixed(2) : '--'}
+          {isCalibrating ? 'Calibrating...' : ratio != null ? ratio.toFixed(2) : '--'}
         </text>
       </svg>
 
       {/* Zone labels below the gauge */}
-      <Box display="flex" justifyContent="space-between" width="100%" maxW={`${size}px`} px={2} mt={-1}>
-        <Text fontSize="2xs" color="text.muted">0</Text>
-        <Text fontSize="2xs" color="text.muted">0.8</Text>
-        <Text fontSize="2xs" color="text.muted">1.3</Text>
-        <Text fontSize="2xs" color="text.muted">2.0</Text>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        width="100%"
+        maxW={`${size}px`}
+        px={2}
+        mt={-1}
+      >
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          0
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          0.8
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          1.3
+        </Text>
+        <Text fontSize="2xs" color="text.muted" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          2.0
+        </Text>
       </Box>
     </Box>
   )

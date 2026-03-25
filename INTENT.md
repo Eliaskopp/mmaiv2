@@ -42,5 +42,7 @@ Demonstrate full-stack engineering capability for **Melbourne SportsTech** roles
 
 ## Live URLs
 
-- **V1 (Production)**: https://www.mmai.coach — JavaScript monolith, Express + React
-- **V2 (Portfolio)**: https://chat.mmai.coach — Python/FastAPI + React/Chakra UI
+- **Production**: https://www.mmai.coach — Python/FastAPI + React/Chakra UI (V2)
+- **Staging**: https://chat.mmai.coach — same V2 codebase, pre-production QA
+
+V1 (JavaScript/Express monolith) has been officially decommissioned.

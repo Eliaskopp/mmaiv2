@@ -37,17 +37,16 @@ async def _send(params: resend.Emails.SendParams, fallback_log: str) -> None:
         logger.exception("[EMAIL] Send failed: %s", fallback_log)
 
 
-async def send_verification_email(email: str, token: str) -> None:
-    url = f"{settings.app_url}/verify-email?token={token}"
+async def send_verification_otp_email(email: str, code: str) -> None:
     await _send(
         {
             "from": settings.email_from,
             "to": email,
-            "subject": "Verify your MMAi Coach account",
-            "html": _verification_html(url),
-            "text": f"Verify your email: {url}\n\nLink expires in 48 hours.",
+            "subject": "Your MMAi Coach verification code",
+            "html": _verification_otp_html(code),
+            "text": f"Your verification code is: {code}\n\nIt expires in 10 minutes.",
         },
-        fallback_log=f"Verification link for {email}: {url}",
+        fallback_log=f"Verification OTP for {email}: {code}",
     )
 
 
@@ -106,12 +105,14 @@ _BASE = """
 _BTN = '<a href="{url}" style="display:inline-block;margin:24px 0;padding:14px 32px;background:#FF6B35;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px">{label}</a>'
 
 
-def _verification_html(url: str) -> str:
+def _verification_otp_html(code: str) -> str:
+    spaced = " &nbsp; ".join(code)
     body = f"""
       <h2 style="color:#F5F0E8;margin:0 0 16px">Verify your email</h2>
-      <p style="color:#D4CFC7;line-height:1.6">Click the button below to verify your MMAi Coach account. The link expires in <strong style="color:#F5F0E8">48 hours</strong>.</p>
-      <div style="text-align:center">{_BTN.format(url=url, label="Verify Email")}</div>
-      <p style="color:#D4CFC7;font-size:13px">Or copy this link:<br><span style="color:#FF6B35;word-break:break-all">{url}</span></p>
+      <p style="color:#D4CFC7;line-height:1.6">Enter this code in the app to verify your MMAi Coach account. It expires in <strong style="color:#F5F0E8">10 minutes</strong>.</p>
+      <div style="text-align:center;margin:24px 0">
+        <span style="display:inline-block;padding:16px 32px;background:#1E3A5F;border-radius:8px;color:#F5F0E8;font-size:32px;font-family:'Courier New',monospace;letter-spacing:8px;font-weight:bold">{spaced}</span>
+      </div>
       <p style="color:#D4CFC7;font-size:13px">If you didn't create an account, you can ignore this email.</p>
     """
     return _BASE.format(body=body)

@@ -54,9 +54,11 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
         />
         <IconButton
           aria-label="Add"
-          icon={<Plus size={16} />}
+          icon={<Plus size={18} />}
           onClick={addTag}
           size="sm"
+          minH="44px"
+          minW="44px"
           variant="outline"
         />
       </HStack>

@@ -178,6 +178,49 @@ class GrokClient:
             logger.exception("extract_notes failed")
             return None
 
+    async def extract_memory(
+        self,
+        messages: list[dict],
+        model: str = "grok-3-mini",
+    ) -> dict | None:
+        """Extract structured performance data from conversation messages.
+
+        Returns a dict with 'performance_events' and 'training_state' keys,
+        or None on failure. Pydantic validation happens in the service layer.
+        """
+        if not self.api_key:
+            return {"performance_events": [], "training_state": None}
+
+        from app.prompts.memory_extraction import MEMORY_EXTRACTION_PROMPT
+
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": MEMORY_EXTRACTION_PROMPT},
+                *messages,
+            ],
+            "response_format": {"type": "json_object"},
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    json=payload,
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    timeout=30.0,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                raw = data["choices"][0]["message"]["content"].strip()
+                return json.loads(raw)
+        except Exception:
+            logger.exception("extract_memory failed")
+            return None
+
     async def health_check(self) -> dict:
         """Lightweight Grok API ping. Returns status and latency."""
         import time

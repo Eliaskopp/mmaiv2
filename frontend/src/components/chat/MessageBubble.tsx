@@ -1,49 +1,32 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
-import { Bot } from 'lucide-react'
+import { Box, Button, Flex, Image, Text } from '@chakra-ui/react'
+import { AlertCircle, RotateCcw } from 'lucide-react'
 import { MarkdownContent } from './MarkdownContent'
 import { CitationBadge } from './CitationBadge'
 import type { Citation } from './CitationBadge'
+import type { ChatMessage } from '../../types'
 
 interface MessageBubbleProps {
-  role: string
-  content: string
-  createdAt: string
-  isOptimistic?: boolean
-  metadata?: Record<string, unknown> | null
+  message: ChatMessage
   onCitationClick?: (citation: Citation) => void
+  onRetry?: (message: ChatMessage) => void
 }
 
-function formatTime(iso: string): string {
-  const date = new Date(iso)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-export function MessageBubble({
-  role,
-  content,
-  createdAt,
-  isOptimistic,
-  metadata,
-  onCitationClick,
-}: MessageBubbleProps) {
+export function MessageBubble({ message, onCitationClick, onRetry }: MessageBubbleProps) {
+  const { role, content, status, metadata_ } = message
   const isUser = role === 'user'
-  const citations = metadata?.citations as Citation[] | undefined
+  const isError = status === 'error'
+  const isPending = status === 'pending'
+  const citations = metadata_?.citations as Citation[] | undefined
 
   return (
-    <Flex justify={isUser ? 'flex-end' : 'flex-start'} opacity={isOptimistic ? 0.7 : 1}>
+    <Flex
+      justify={isUser ? 'flex-end' : 'flex-start'}
+      opacity={isError ? 0.6 : isPending ? 0.7 : 1}
+    >
       <Box maxW="85%">
         {!isUser && (
           <Flex align="center" gap={1.5} mb={1}>
-            <Flex
-              align="center"
-              justify="center"
-              w="22px"
-              h="22px"
-              borderRadius="full"
-              bg="brand.subtle"
-            >
-              <Bot size={14} color="#FF6B35" />
-            </Flex>
+            <Image src="/logo-symbol.png" alt="MMAi" w="22px" h="22px" />
             <Text fontSize="xs" color="text.muted" fontWeight="600">
               MMAi Coach
             </Text>
@@ -51,8 +34,8 @@ export function MessageBubble({
         )}
 
         <Box
-          bg={isUser ? 'brand.primary' : 'bg.subtle'}
-          color={isUser ? 'white' : 'text.primary'}
+          bg={isUser ? 'chat.user.bg' : 'chat.ai.bg'}
+          color={isUser ? 'chat.user.text' : 'chat.ai.text'}
           px={4}
           py={3}
           borderRadius="2xl"
@@ -76,15 +59,25 @@ export function MessageBubble({
           ) : null}
         </Box>
 
-        <Text
-          fontSize="2xs"
-          color="text.muted"
-          mt={1}
-          textAlign={isUser ? 'right' : 'left'}
-          px={1}
-        >
-          {formatTime(createdAt)}
-        </Text>
+        {isError && (
+          <Flex align="center" justify="flex-end" gap={2} mt={1} px={1}>
+            <Flex align="center" gap={1} color="red.400">
+              <AlertCircle size={14} />
+              <Text fontSize="xs">Send failed</Text>
+            </Flex>
+            {onRetry && (
+              <Button
+                variant="ghost"
+                size="xs"
+                color="brand.primary"
+                leftIcon={<RotateCcw size={12} />}
+                onClick={() => onRetry(message)}
+              >
+                Retry
+              </Button>
+            )}
+          </Flex>
+        )}
       </Box>
     </Flex>
   )

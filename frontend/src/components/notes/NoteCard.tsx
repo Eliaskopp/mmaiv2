@@ -1,10 +1,4 @@
-import {
-  Badge,
-  Box,
-  Flex,
-  HStack,
-  Text,
-} from '@chakra-ui/react'
+import { Badge, Box, Flex, HStack, Text } from '@chakra-ui/react'
 import { Bot, Pin, User } from 'lucide-react'
 import type { NoteResponse } from '../../types'
 
@@ -44,16 +38,14 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
           {cfg.label}
         </Text>
         <HStack spacing={1} ml="auto">
-          {note.pinned && (
-            <Box as={Pin} size={14} color="brand.primary" fill="currentColor" />
-          )}
+          {note.pinned && <Box as={Pin} size={14} color="brand.primary" fill="currentColor" />}
           <Badge
             fontSize="2xs"
             px={1.5}
             py={0.5}
             borderRadius="sm"
             bg={isAI ? 'accent.blue' : 'bg.panel'}
-            color={isAI ? 'white' : 'text.secondary'}
+            color={isAI ? 'chat.user.text' : 'text.secondary'}
             display="flex"
             alignItems="center"
             gap={1}

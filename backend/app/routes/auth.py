@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, get_db
@@ -12,6 +12,7 @@ from app.schemas.auth import (
     RefreshRequest,
     RefreshResponse,
     RegisterRequest,
+    ResendVerificationRequest,
     ResetPasswordRequest,
     UserResponse,
     VerifyEmailRequest,
@@ -23,9 +24,14 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=AuthResponse, status_code=201)
 @limiter.limit("5/minute")
-async def register(request: Request, body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+async def register(
+    request: Request,
+    body: RegisterRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
     user, access, refresh = await auth_service.register_user(
-        db, body.email, body.password, body.display_name
+        db, body.email, body.password, body.display_name, background_tasks
     )
     return AuthResponse(
         user=UserResponse.model_validate(user),
@@ -58,9 +64,23 @@ async def me(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/verify-email", response_model=MessageResponse)
-async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
-    await auth_service.verify_email(db, body.token)
+async def verify_email(
+    body: VerifyEmailRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    await auth_service.verify_email(db, body.email, body.code, background_tasks)
     return MessageResponse(message="Email verified successfully")
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+async def resend_verification(
+    body: ResendVerificationRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    await auth_service.resend_verification(db, body.email, background_tasks)
+    return MessageResponse(message="Verification code sent")
 
 
 @router.post("/logout", response_model=MessageResponse)

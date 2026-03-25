@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Drawer,
@@ -14,14 +20,16 @@ import {
   HStack,
   IconButton,
   Input,
+  Spacer,
   Text,
   Textarea,
   VStack,
+  useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import { Archive, ExternalLink, Pin } from 'lucide-react'
+import { Archive, ExternalLink, Pin, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useUpdateNote } from '../../hooks/use-notes'
+import { useDeleteNote, useUpdateNote } from '../../hooks/use-notes'
 import type { NoteResponse, NoteUpdate } from '../../types'
 import type { AxiosError } from 'axios'
 
@@ -41,29 +49,31 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
   const toast = useToast()
   const navigate = useNavigate()
   const updateMutation = useUpdateNote()
+  const deleteMutation = useDeleteNote()
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
 
   // Track pinned state locally for optimistic toggle
   const [localPinned, setLocalPinned] = useState(false)
-
-  useEffect(() => {
-    if (note) {
-      setLocalPinned(note.pinned)
-    }
-  }, [note?.id, note?.pinned])
+  const [prevNoteKey, setPrevNoteKey] = useState<string>()
 
   const { control, handleSubmit, reset } = useForm<FormValues>({
     defaultValues: { title: '', summary: '', user_notes: '' },
   })
 
-  useEffect(() => {
+  // Sync local state when the note changes (React render-time adjustment)
+  const noteKey = note ? `${note.id}:${note.pinned}` : undefined
+  if (noteKey !== prevNoteKey) {
+    setPrevNoteKey(noteKey)
     if (note) {
+      setLocalPinned(note.pinned)
       reset({
         title: note.title,
         summary: note.summary ?? '',
         user_notes: note.user_notes ?? '',
       })
     }
-  }, [note, reset])
+  }
 
   function onSubmit(values: FormValues) {
     if (!note) return
@@ -80,7 +90,8 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
           onClose()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
+          const msg =
+            (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Update failed'
           toast({ title: msg, status: 'error', duration: 4000 })
         },
       },
@@ -118,7 +129,8 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
           onClose()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Archive failed'
+          const msg =
+            (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Archive failed'
           toast({ title: msg, status: 'error', duration: 4000 })
         },
       },
@@ -129,6 +141,23 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
     if (note?.source_conversation_id) {
       navigate(`/chat/${note.source_conversation_id}`)
     }
+  }
+
+  function handleDelete() {
+    if (!note) return
+    deleteMutation.mutate(note.id, {
+      onSuccess: () => {
+        toast({ title: 'Note deleted', status: 'success', duration: 3000 })
+        onDeleteClose()
+        onClose()
+      },
+      onError: (err) => {
+        const msg =
+          (err as AxiosError<{ detail?: string }>)?.response?.data?.detail || 'Delete failed'
+        toast({ title: msg, status: 'error', duration: 4000 })
+        onDeleteClose()
+      },
+    })
   }
 
   const isAI = note?.source === 'ai'
@@ -182,7 +211,49 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                     Go to Source
                   </Button>
                 )}
+                <Spacer />
+                <IconButton
+                  aria-label="Delete note"
+                  icon={<Trash2 size={18} />}
+                  variant="ghost"
+                  color="red.400"
+                  minH="48px"
+                  minW="48px"
+                  onClick={onDeleteOpen}
+                />
               </HStack>
+
+              {/* Delete confirmation dialog */}
+              <AlertDialog
+                isOpen={isDeleteOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onDeleteClose}
+                isCentered
+              >
+                <AlertDialogOverlay>
+                  <AlertDialogContent bg="bg.muted">
+                    <AlertDialogHeader fontSize="lg" fontWeight="bold" color="text.primary">
+                      Delete Note
+                    </AlertDialogHeader>
+                    <AlertDialogBody color="text.secondary">
+                      Delete this note permanently?
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                      <Button ref={cancelRef} onClick={onDeleteClose} variant="ghost">
+                        Cancel
+                      </Button>
+                      <Button
+                        colorScheme="red"
+                        onClick={handleDelete}
+                        ml={3}
+                        isLoading={deleteMutation.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialogOverlay>
+              </AlertDialog>
 
               {/* Title */}
               <FormControl>
@@ -191,9 +262,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="title"
                   control={control}
                   rules={{ required: true, maxLength: 200 }}
-                  render={({ field }) => (
-                    <Input {...field} size="sm" maxLength={200} />
-                  )}
+                  render={({ field }) => <Input {...field} size="sm" maxLength={200} />}
                 />
               </FormControl>
 
@@ -204,12 +273,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="summary"
                   control={control}
                   render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      size="sm"
-                      rows={3}
-                      placeholder="Key details..."
-                    />
+                    <Textarea {...field} size="sm" rows={3} placeholder="Key details..." />
                   )}
                 />
               </FormControl>
@@ -221,12 +285,7 @@ export function NoteDrawer({ note, isOpen, onClose }: NoteDrawerProps) {
                   name="user_notes"
                   control={control}
                   render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      size="sm"
-                      rows={4}
-                      placeholder="Add your own notes..."
-                    />
+                    <Textarea {...field} size="sm" rows={4} placeholder="Add your own notes..." />
                   )}
                 />
               </FormControl>

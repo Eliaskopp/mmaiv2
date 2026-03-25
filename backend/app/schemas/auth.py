@@ -22,7 +22,12 @@ class RefreshRequest(BaseModel):
 
 
 class VerifyEmailRequest(BaseModel):
-    token: str
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
 
 
 class ForgotPasswordRequest(BaseModel):

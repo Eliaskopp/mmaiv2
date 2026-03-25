@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, Text, useToken } from '@chakra-ui/react'
 import {
   ComposedChart,
   Bar,
@@ -16,29 +16,39 @@ interface VolumeTrendChartProps {
   data: DailyVolumePoint[]
 }
 
-const TICK_STYLE = {
-  fill: 'rgba(255,255,255,0.4)',
-  fontSize: 11,
-  fontVariantNumeric: 'tabular-nums' as const,
-}
-
 function formatDateTick(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00')
   return `${d.getDate()}/${d.getMonth() + 1}`
 }
 
 export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
+  const [accentBlue, brandPrimary, textMuted] = useToken('colors', [
+    'accent.blue',
+    'brand.primary',
+    'text.muted',
+  ])
+
+  const TICK_STYLE = {
+    fill: textMuted,
+    fontSize: 11,
+    fontVariantNumeric: 'tabular-nums' as const,
+  }
+
   return (
     <Box bg="bg.subtle" p={4} borderRadius="lg">
       {/* Inline legend */}
       <Flex gap={4} mb={3} align="center">
         <Flex align="center" gap={1.5}>
-          <Box w="10px" h="10px" borderRadius="sm" bg="#60A5FA" opacity={0.6} />
-          <Text fontSize="xs" color="text.secondary">Duration (min)</Text>
+          <Box w="10px" h="10px" borderRadius="sm" bg="accent.blue" opacity={0.6} />
+          <Text fontSize="xs" color="text.secondary">
+            Duration (min)
+          </Text>
         </Flex>
         <Flex align="center" gap={1.5}>
-          <Box w="10px" h="3px" borderRadius="full" bg="#FF6B35" />
-          <Text fontSize="xs" color="text.secondary">Exertion Load</Text>
+          <Box w="10px" h="3px" borderRadius="full" bg="brand.primary" />
+          <Text fontSize="xs" color="text.secondary">
+            Exertion Load
+          </Text>
         </Flex>
       </Flex>
 
@@ -76,15 +86,12 @@ export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
             axisLine={false}
           />
 
-          <Tooltip
-            content={<ChartTooltip />}
-            cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-          />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
 
           <Bar
             dataKey="total_duration"
             yAxisId="duration"
-            fill="#60A5FA"
+            fill={accentBlue}
             fillOpacity={0.6}
             radius={[3, 3, 0, 0]}
             maxBarSize={12}
@@ -94,10 +101,10 @@ export function VolumeTrendChart({ data }: VolumeTrendChartProps) {
             dataKey="total_load"
             yAxisId="load"
             type="monotone"
-            stroke="#FF6B35"
+            stroke={brandPrimary}
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4, fill: '#FF6B35' }}
+            activeDot={{ r: 4, fill: brandPrimary }}
           />
         </ComposedChart>
       </ResponsiveContainer>

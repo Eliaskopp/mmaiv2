@@ -4,11 +4,13 @@ import type { ProfileCreate, ProfileUpdate } from '../types'
 
 export const PROFILE_KEY = ['profile'] as const
 
-export function useProfile() {
+export function useProfile(opts?: { enabled?: boolean; retry?: boolean }) {
   return useQuery({
     queryKey: PROFILE_KEY,
     queryFn: getProfile,
     staleTime: 60_000,
+    enabled: opts?.enabled,
+    retry: opts?.retry,
   })
 }
 

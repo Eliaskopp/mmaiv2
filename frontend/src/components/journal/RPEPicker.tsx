@@ -26,7 +26,7 @@ export function RPEPicker({ value, onChange }: RPEPickerProps) {
               fontWeight="semibold"
               fontSize="sm"
               bg={isSelected ? getRPEColor(n) : 'bg.muted'}
-              color={isSelected ? 'white' : 'text.secondary'}
+              color={isSelected ? 'chat.user.text' : 'text.secondary'}
               transform={isSelected ? 'scale(1.1)' : 'scale(1)'}
               transition="all 0.15s ease"
               onClick={() => onChange(value === n ? null : n)}

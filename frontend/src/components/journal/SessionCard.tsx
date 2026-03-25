@@ -30,8 +30,10 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
   const config = SESSION_TYPE_MAP[session.session_type] ?? SESSION_TYPE_MAP.other
   const Icon = config.icon
 
-  const dateLabel = new Date(session.session_date.slice(0, 10) + 'T00:00:00')
-    .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const dateLabel = new Date(session.session_date.slice(0, 10) + 'T00:00:00').toLocaleDateString(
+    'en-US',
+    { month: 'short', day: 'numeric' },
+  )
 
   const techniqueCount = session.techniques?.length ?? 0
 
@@ -74,7 +76,11 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
           </Text>
           <Flex ml="auto" align="center" gap={3} flexShrink={0}>
             {session.duration_minutes && (
-              <Text fontSize="xs" color="text.secondary">
+              <Text
+                fontSize="xs"
+                color="text.secondary"
+                sx={{ fontVariantNumeric: 'tabular-nums' }}
+              >
                 {session.duration_minutes} min
               </Text>
             )}
@@ -83,12 +89,13 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
                 align="center"
                 justify="center"
                 bg={getRPEColor(session.intensity_rpe)}
-                color="white"
+                color="chat.user.text"
                 borderRadius="full"
                 w="22px"
                 h="22px"
                 fontSize="xs"
                 fontWeight="bold"
+                sx={{ fontVariantNumeric: 'tabular-nums' }}
               >
                 {session.intensity_rpe}
               </Flex>
