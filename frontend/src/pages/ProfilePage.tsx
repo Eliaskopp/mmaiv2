@@ -575,7 +575,7 @@ export function ProfilePage() {
 
           <Button
             variant="outline"
-            colorPalette="red"
+            colorScheme="red"
             width="full"
             size="lg"
             onClick={() => {
