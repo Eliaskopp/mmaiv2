@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm, useWatch, Controller } from 'react-hook-form'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -21,7 +21,7 @@ import {
 import { useProfile, useCreateProfile, useUpdateProfile } from '../hooks/use-profile'
 import { ChoiceChipGroup } from '../components/ChoiceChipGroup'
 import { TagInput } from '../components/TagInput'
-import type { ProfileUpdate } from '../types'
+import type { ProfileResponse, ProfileUpdate } from '../types'
 import type { AxiosError } from 'axios'
 
 const SKILL_OPTIONS = [
@@ -99,6 +99,7 @@ function formatDate(dateStr: string | null): string {
 
 export function ProfilePage() {
   const toast = useToast()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { data: profile, isLoading, isError, error } = useProfile()
   const createMutation = useCreateProfile()
@@ -106,6 +107,7 @@ export function ProfilePage() {
 
   const is404 = isError && (error as AxiosError)?.response?.status === 404
   const hasProfile = !!profile
+  const isOnboarding = searchParams.get('onboarding') === 'true'
 
   const { control, handleSubmit, reset } = useForm<ProfileUpdate>({
     defaultValues: EMPTY_DEFAULTS,
@@ -151,12 +153,15 @@ export function ProfilePage() {
 
     const mutation = hasProfile ? updateMutation : createMutation
     mutation.mutate(cleaned, {
-      onSuccess: () => {
+      onSuccess: (data: ProfileResponse) => {
         toast({
           title: hasProfile ? 'Profile updated' : 'Profile created',
           status: 'success',
           duration: 4000,
         })
+        if (isOnboarding && data.profile_completeness > 50) {
+          navigate('/chat')
+        }
       },
       onError: (err) => {
         const message =
@@ -187,7 +192,6 @@ export function ProfilePage() {
   // Derive the chip value for Weight Class
   const weightChipValue = showCustomWeight || isCustomWeightClass ? '__other__' : weightClassValue
 
-  const isOnboarding = searchParams.get('onboarding') === 'true'
   const isIncomplete = (profile?.profile_completeness ?? 0) <= 50
 
   let pageHeading = 'Profile'
